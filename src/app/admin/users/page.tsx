@@ -1,16 +1,16 @@
+'use client'
 import React, { useMemo } from 'react'
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { format } from 'date-fns'
 import Link from 'next/link'
-import { Button } from '../ui/button'
 import { EyeIcon } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { useData } from '@/contexts/DataContext'
 
-interface UsersContentProps {
-  users: User[]
-  searchTerm: string
-}
 
-const UsersContent: React.FC<UsersContentProps> = ({ users, searchTerm }) => {
+
+const UsersContentPage: React.FC = () => {
+    const {users,searchTerm} =useData()
   const filteredUsers = useMemo(() => {
     return users.filter(user =>
       user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -21,7 +21,7 @@ const UsersContent: React.FC<UsersContentProps> = ({ users, searchTerm }) => {
 
   return (
     <div>
-      <h3 className="text-lg font-semibold mb-4">Users</h3>
+      <h3 className="text-lg font-semibold mb-4"></h3>
       <table className="w-full caption-bottom text-sm">
         <thead className="border-b">
           <tr>
@@ -66,4 +66,4 @@ const UsersContent: React.FC<UsersContentProps> = ({ users, searchTerm }) => {
   )
 }
 
-export default UsersContent
+export default UsersContentPage

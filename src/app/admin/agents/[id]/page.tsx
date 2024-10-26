@@ -6,22 +6,7 @@ import { Badge } from "@/components/ui/badge"
 import { ArrowLeftIcon } from 'lucide-react'
 import Link from 'next/link'
 
-interface DeliveryAgent {
-  id: string
-  name: string
-  status: 'available' | 'on delivery' | 'offline'
-  completedDeliveries: number
-  phoneNumber: string
-  email: string
-  joinDate: Date
-  rating: number
-  currentOrder?: {
-    id: string
-    restaurantName: string
-    customerName: string
-    deliveryAddress: string
-  }
-}
+
 
 // You would typically fetch this data from an API
 const fetchDeliveryAgentDetails = async (id: string): Promise<DeliveryAgent> => {
@@ -55,7 +40,7 @@ const DeliveryAgentDetails: React.FC<{ id: string }> = ({ id }) => {
 
   return (
     <div className="container mx-auto p-4">
-      <Link href="/admin" passHref>
+      <Link href="/admin/agents" passHref>
         <Button variant="outline" className="mb-4">
           <ArrowLeftIcon className="mr-2 h-4 w-4" />
           Back to Delivery Agents

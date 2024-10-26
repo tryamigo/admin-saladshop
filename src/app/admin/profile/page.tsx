@@ -1,4 +1,4 @@
-// components/admin/ProfileContent.tsx
+'use client'
 import React from 'react'
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -18,7 +18,7 @@ const mockAdminProfile: AdminProfile = {
   joinDate: new Date("2022-01-01")
 }
 
-const ProfileContent: React.FC = () => {
+const ProfileContentPage: React.FC = () => {
   const admin = mockAdminProfile // In a real app, you'd fetch this data
 
   return (
@@ -64,4 +64,4 @@ const ProfileContent: React.FC = () => {
   )
 }
 
-export default ProfileContent
+export default ProfileContentPage

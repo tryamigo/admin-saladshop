@@ -1,15 +1,15 @@
+'use client'
 import React from 'react'
 import { Badge } from "@/components/ui/badge"
 import Link from 'next/link'
-import { Button } from '../ui/button'
 import { EyeIcon, ChevronLeftIcon, ChevronRightIcon } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { useData } from '@/contexts/DataContext'
 
-interface DeliveryAgentsContentProps {
-  deliveryAgents: DeliveryAgent[]
-  searchTerm: string
-}
 
-const DeliveryAgentsContent: React.FC<DeliveryAgentsContentProps> = ({ deliveryAgents, searchTerm }) => {
+
+const DeliveryAgentsContentPage: React.FC = () => {
+    const {deliveryAgents,searchTerm} =useData()
   const filteredAgents = deliveryAgents.filter(agent =>
     agent.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     agent.id.toString().includes(searchTerm)
@@ -17,7 +17,7 @@ const DeliveryAgentsContent: React.FC<DeliveryAgentsContentProps> = ({ deliveryA
 
   return (
     <div>
-      <h3 className="text-lg font-semibold mb-4">Delivery Agents</h3>
+      <h3 className="text-lg font-semibold mb-4"></h3>
       <table className="w-full caption-bottom text-sm">
         <thead className="border-b">
           <tr>
@@ -66,4 +66,4 @@ const DeliveryAgentsContent: React.FC<DeliveryAgentsContentProps> = ({ deliveryA
   )
 }
 
-export default DeliveryAgentsContent
+export default DeliveryAgentsContentPage

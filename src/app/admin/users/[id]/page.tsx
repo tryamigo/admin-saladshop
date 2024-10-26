@@ -7,20 +7,6 @@ import { ArrowLeftIcon } from 'lucide-react'
 import Link from 'next/link'
 import { format } from 'date-fns'
 
-interface User {
-  id: string
-  name: string
-  email: string
-  registrationDate: Date
-  phoneNumber: string
-  address: string
-  orderHistory: {
-    id: string
-    date: Date
-    total: number
-    status: string
-  }[]
-}
 
 // You would typically fetch this data from an API
 const fetchUserDetails = async (id: string): Promise<User> => {
@@ -50,7 +36,7 @@ const UserDetails: React.FC<{ id: string }> = ({ id }) => {
 
   return (
     <div className="container mx-auto p-4">
-      <Link href="/admin" passHref>
+      <Link href="/admin/users" passHref>
         <Button variant="outline" className="mb-4">
           <ArrowLeftIcon className="mr-2 h-4 w-4" />
           Back to Users

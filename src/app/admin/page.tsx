@@ -1,195 +1,160 @@
 'use client'
-
-import { useState, useEffect } from 'react'
-import { motion } from 'framer-motion'
-import {
-  BarChartIcon,
-  PersonIcon,
-  BoxIcon,
-  GearIcon,
-  BellIcon,
-  ExitIcon,
-} from '@radix-ui/react-icons'
+import React, { useMemo,useState } from 'react'
+import { BarChartIcon, PersonIcon, BoxIcon, PlusIcon } from '@radix-ui/react-icons'
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import DashboardContent from '../../components/admin/DashboardContent'
-import OrdersContent from '../../components/admin/OrdersContent'
-import RestaurantsContent from '../../components/admin/RestaurantsContent'
-import DeliveryAgentsContent from '../../components/admin/DeliveryAgentsContent'
-import UsersContent from '../../components/admin/UsersContent'
-import SettingsContent from '../../components/admin/SettingsContent'
-import { Input } from '@/components/ui/input'
-import { SearchIcon } from 'lucide-react'
-import ProfileContent from '@/components/admin/ProfileContent'
+import { StoreIcon, TruckIcon, TrendingUpIcon, TrendingDownIcon } from 'lucide-react'
+import { format } from 'date-fns'
+import CreateOrderModal from '@/components/CreateOrderModal'
+import AssignDeliveryAgentModal from '@/components/AssignDeliveryAgentModal'
+import { useData } from '@/contexts/DataContext'
 
 
 
-// Mock data
-const mockOrders: Order[] = [
-  {
-    id: '1',
-    customerName: 'John Doe',
-    restaurantName: 'Burger King',
-    status: 'pending',
-    total: 10.99,
-    date: new Date('2022-01-01T12:00:00.000Z'),
-    items: [
-      { id: '1', name: 'Whopper', quantity: 1, price: 5.99 },
-      { id: '2', name: 'Fries', quantity: 1, price: 2.99 },
-    ],
-    deliveryAddress: '123 Main St, Anytown, USA',
-    paymentMethod: 'Credit Card',
-  },
-  {
-    id: '2',
-    customerName: 'Jane Doe',
-    restaurantName: 'Pizza Hut',
-    status: 'preparing',
-    total: 15.99,
-    date: new Date('2022-01-02T13:00:00.000Z'),
-    items: [
-      { id: '3', name: 'Pepperoni Pizza', quantity: 1, price: 12.99 },
-      { id: '4', name: 'Garlic Bread', quantity: 1, price: 3.00 },
-    ],
-    deliveryAddress: '456 Elm St, Othertown, USA',
-    paymentMethod: 'PayPal',
-  },
-]
+const DashboardContentPage: React.FC = () => {
+    const { orders, restaurants, deliveryAgents, users, searchTerm } = useData()
+    const [isCreateOrderModalOpen, setIsCreateOrderModalOpen] = useState(false)
+  const [isAssignDeliveryAgentModalOpen, setIsAssignDeliveryAgentModalOpen] = useState(false)
 
-const mockRestaurants: Restaurant[] = [
-  { id: '1', name: 'Burger King', cuisine: 'Fast Food', rating: 4.2 ,address:'noida'},
-  { id: '2', name: 'Pizza Hut', cuisine: 'Italian', rating: 4.5 ,address:'delhi'},
-]
-
-const mockDeliveryAgents: DeliveryAgent[] = [
-  { id: '1', name: 'John Smith', status: 'available', completedDeliveries: 100 },
-  { id: '2', name: 'Jane Smith', status: 'on delivery', completedDeliveries: 50 },
-]
-
-const mockUsers: User[] = [
-  { id: '1', name: 'John Doe', email: 'john@example.com', registrationDate: new Date('2022-01-01T12:00:00.000Z') },
-  { id: '2', name: 'Jane Doe', email: 'jane@example.com', registrationDate: new Date('2022-01-02T13:00:00.000Z') },
-]
-
-const AdminDashboard: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<string>('dashboard')
-  const [orders, setOrders] = useState<Order[]>([])
-  const [restaurants, setRestaurants] = useState<Restaurant[]>([])
-  const [deliveryAgents, setDeliveryAgents] = useState<DeliveryAgent[]>([])
-  const [users, setUsers] = useState<User[]>([])
-  const [searchTerm, setSearchTerm] = useState('')
-
-  const menuItems: MenuItem[] = [
-    { name: 'Dashboard', icon: BarChartIcon, id: 'dashboard' },
-    { name: 'Orders', icon: BoxIcon, id: 'orders' },
-    { name: 'Restaurants', icon: BarChartIcon, id: 'restaurants' },
-    { name: 'Delivery Agents', icon: PersonIcon, id: 'delivery-agents' },
-    { name: 'Users', icon: PersonIcon, id: 'users' },
-    { name: 'Settings', icon: GearIcon, id: 'settings' },
-    { name: 'Profile', icon: PersonIcon, id: 'profile' }, // New menu item
-
-  ]
-
-  useEffect(() => {
-    // In a real application, you would fetch data from your API here
-    setOrders(mockOrders)
-    setRestaurants(mockRestaurants)
-    setDeliveryAgents(mockDeliveryAgents)
-    setUsers(mockUsers)
-  }, [])
-  const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(event.target.value.toLowerCase())
-  }
-  const renderContent = (): JSX.Element => {
-    switch (activeTab) {
-      case 'dashboard':
-        return <DashboardContent orders={orders} restaurants={restaurants} deliveryAgents={deliveryAgents} users={users} searchTerm={searchTerm} />
-      case 'orders':
-        return <OrdersContent orders={orders} searchTerm={searchTerm} />
-      case 'restaurants':
-        return <RestaurantsContent restaurants={restaurants} searchTerm={searchTerm} />
-      case 'delivery-agents':
-        return <DeliveryAgentsContent deliveryAgents={deliveryAgents} searchTerm={searchTerm} />
-      case 'users':
-        return <UsersContent users={users} searchTerm={searchTerm} />
-      case 'settings':
-        return <SettingsContent />
-      case 'profile':
-        return <ProfileContent />
-      default:
-        return <DashboardContent orders={orders} restaurants={restaurants} deliveryAgents={deliveryAgents} users={users} searchTerm={searchTerm} />
+  const filteredData = useMemo(() => {
+    const lowerSearchTerm = searchTerm?.toLowerCase()
+    return {
+      orders: orders?.filter(order => 
+        order.customerName.toLowerCase().includes(lowerSearchTerm) ||
+        order.restaurantName.toLowerCase().includes(lowerSearchTerm)
+      ),
+      restaurants: restaurants?.filter(restaurant => 
+        restaurant.name.toLowerCase().includes(lowerSearchTerm)
+      ),
+      deliveryAgents: deliveryAgents?.filter(agent => 
+        agent.name.toLowerCase().includes(lowerSearchTerm)
+      ),
+      users: users?.filter(user => 
+        user.name.toLowerCase().includes(lowerSearchTerm) ||
+        user.email.toLowerCase().includes(lowerSearchTerm)
+      )
     }
+  }, [orders, restaurants, deliveryAgents, users, searchTerm])
+
+  const stats = useMemo(() => {
+    const today = new Date()
+    const yesterday = new Date(today)
+    yesterday.setDate(yesterday.getDate() - 1)
+
+    const ordersToday = filteredData.orders?.filter(order => 
+      format(order.date, 'yyyy-MM-dd') === format(today, 'yyyy-MM-dd')
+    ).length
+    const ordersYesterday = filteredData.orders?.filter(order => 
+      format(order.date, 'yyyy-MM-dd') === format(yesterday, 'yyyy-MM-dd')
+    ).length
+
+    const ordersTrend = ordersToday > ordersYesterday ? 'up' : 'down'
+
+    return {
+      totalOrders: filteredData.orders.length,
+      activeRestaurants: filteredData.restaurants.length,
+      availableDeliveryAgents: filteredData.deliveryAgents.filter((agent) => agent.status === 'available').length,
+      totalUsers: filteredData.users.length,
+      ordersTrend,
+      ordersToday,
+      ordersYesterday
+    }
+  }, [filteredData])
+
+  const handleCreateOrder = (orderData: any) => {
+    // Logic to create a new order
+    console.log("Creating new order...", orderData)
+    // Here you would typically make an API call to create the order
+    // Then update the orders state with the new order
+    // For now, we'll just log the order data
+    setIsCreateOrderModalOpen(true)
+  }
+
+  const handleAssignDeliveryAgent = (assignmentData: any) => {
+    // Logic to assign a delivery agent
+    console.log("Assigning delivery agent...", assignmentData)
+    // Here you would typically make an API call to assign the delivery agent
+    // Then update the orders and deliveryAgents states accordingly
+    // For now, we'll just log the assignment data
+    setIsAssignDeliveryAgentModalOpen(true)
   }
 
   return (
-    <div className="flex h-screen bg-gray-100">
-      {/* Sidebar */}
-      <motion.div
-        initial={{ x: -250 }}
-        animate={{ x: 0 }}
-        className="w-64 bg-white shadow-lg"
-      >
-        <div className="p-4">
-          <h1 className="text-2xl font-bold text-gray-800">Admin Panel</h1>
+    <div className="space-y-8">
+      <div>
+        <h3 className="text-lg font-semibold mb-4">Quick Actions</h3>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <Button variant="outline" className="flex items-center justify-center" onClick={handleCreateOrder}>
+            <PlusIcon className="mr-2 h-4 w-4" />
+            Create New Order
+          </Button>
+          <Button variant="outline" className="flex items-center justify-center" onClick={handleAssignDeliveryAgent}>
+            <TruckIcon className="mr-2 h-4 w-4" />
+            Assign Delivery Agent
+          </Button>
         </div>
-        <nav className="mt-8">
-          {menuItems.map((item) => (
-            <Button
-              key={item.id}
-              variant={activeTab === item.id ? "secondary" : "ghost"}
-              className="w-full justify-start"
-              onClick={() => setActiveTab(item.id)}
-            >
-              <item.icon className="mr-2 h-4 w-4" />
-              {item.name}
-            </Button>
-          ))}
-        </nav>
-      </motion.div>
-
-      {/* Main content */}
-      <div className="flex-1 overflow-x-hidden overflow-y-auto">
-        {/* Header */}
-        <header className="bg-white shadow-sm">
-  <div className="flex items-center justify-between px-4 py-3">
-    <h2 className="text-xl font-semibold text-gray-800">
-      {menuItems.find((item) => item.id === activeTab)?.name}
-    </h2>
-    <div className="flex items-center">
-      <div className="relative mr-4">
-        <Input
-          type="text"
-          placeholder="Search..."
-          className="pl-10 pr-4 py-2 rounded-md"
-          value={searchTerm}
-          onChange={handleSearch}
-        />
-        <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
       </div>
-      <Button variant="ghost" size="icon" className="mr-2">
-        <BellIcon className="h-5 w-5" />
-      </Button>
-      <Button variant="ghost" size="icon">
-        <ExitIcon className="h-5 w-5" />
-      </Button>
-    </div>
-  </div>
-</header>
-
-        {/* Content */}
-        <main className="p-6">
-          <motion.div
-            key={activeTab}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.2 }}
-          >
-            {renderContent()}
-          </motion.div>
-        </main>
+      <CreateOrderModal 
+        isOpen={isCreateOrderModalOpen}
+        onClose={() => setIsCreateOrderModalOpen(false)}
+        onSubmit={handleCreateOrder}
+        restaurants={restaurants}
+      />
+      <AssignDeliveryAgentModal
+        isOpen={isAssignDeliveryAgentModalOpen}
+        onClose={() => setIsAssignDeliveryAgentModalOpen(false)}
+        onSubmit={handleAssignDeliveryAgent}
+        orders={orders.filter(order => order.status === 'pending')}
+        deliveryAgents={deliveryAgents.filter(agent => agent.status === 'available')}
+      />
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Orders</CardTitle>
+            <BoxIcon className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.totalOrders}</div>
+            <p className="text-xs text-muted-foreground">
+              {stats.ordersTrend === 'up' ? (
+                <TrendingUpIcon className="inline mr-1 text-green-500" />
+              ) : (
+                <TrendingDownIcon className="inline mr-1 text-red-500" />
+              )}
+              {stats.ordersToday} today ({stats.ordersYesterday} yesterday)
+            </p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Active Restaurants</CardTitle>
+            <BarChartIcon className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.activeRestaurants}</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Available Delivery Agents</CardTitle>
+            <PersonIcon className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.availableDeliveryAgents}</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Users</CardTitle>
+            <PersonIcon className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.totalUsers}</div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   )
 }
 
-export default AdminDashboard
+export default DashboardContentPage
