@@ -5,7 +5,7 @@ export const handleRequest= async (req: NextRequest, method: string, url: string
     try {
       // Extract the token from the Authorization header
       // const API_BASE_URL = "https://backend.amigo.gg";
-       const API_BASE_URL = "http://localhost:4000";
+       const API_BASE_URL = "http://localhost:3001";
     //   const authHeader = req.headers.get('Authorization');
     //   const token = authHeader && authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null;
     //   if (!token) {

@@ -6,6 +6,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { ArrowLeftIcon } from 'lucide-react'
 import Link from 'next/link'
 import { format } from 'date-fns'
+import { User } from '@/components/admin/types'
+import { useParams } from 'next/navigation'
 
 
 // You would typically fetch this data from an API
@@ -25,9 +27,10 @@ const fetchUserDetails = async (id: string): Promise<User> => {
   }
 }
 
-const UserDetails: React.FC<{ id: string }> = ({ id }) => {
+const UserDetails: React.FC = () => {
   const [user, setUser] = useState<User | null>(null)
-
+  const params = useParams();
+  const id = params.id as string;
   useEffect(() => {
     fetchUserDetails(id).then(setUser)
   }, [id])

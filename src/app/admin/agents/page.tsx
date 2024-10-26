@@ -2,7 +2,7 @@
 import React from 'react'
 import { Badge } from "@/components/ui/badge"
 import Link from 'next/link'
-import { EyeIcon, ChevronLeftIcon, ChevronRightIcon } from 'lucide-react'
+import { EyeIcon } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useData } from '@/contexts/DataContext'
 

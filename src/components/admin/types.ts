@@ -1,6 +1,6 @@
 // // Types
-type OrderStatus = 'pending' | 'preparing' | 'on the way' | 'delivered'
-interface OrderItem {
+export type OrderStatus = 'pending' | 'preparing' | 'on the way' | 'delivered'
+export interface OrderItem {
   id: string
   name: string
   quantity: number
@@ -8,7 +8,7 @@ interface OrderItem {
   ratings:number
 }
 
-interface Order {
+export interface Order {
   id: string
   customerName: string
   restaurantName: string
@@ -20,7 +20,7 @@ interface Order {
   paymentMethod: string
 }
 
-interface Restaurant {
+export interface Restaurant {
     id: string
     name: string
     cuisine: string
@@ -30,7 +30,7 @@ interface Restaurant {
     openingHours: string
   }
 
-  interface MenuItem {
+  export interface MenuItem {
     id: string
     name: string
     description: string
@@ -38,7 +38,7 @@ interface Restaurant {
   }
   
 
-  interface DeliveryAgent {
+  export interface DeliveryAgent {
     id: string
     name: string
     status: 'available' | 'on delivery' | 'offline'
@@ -55,7 +55,7 @@ interface Restaurant {
     }
   }
 
-interface User {
+export interface User {
     id: string
     name: string
     email: string

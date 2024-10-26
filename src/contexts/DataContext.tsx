@@ -1,5 +1,6 @@
 // contexts/DataContext.tsx
 'use client'
+import { DeliveryAgent, Order, Restaurant, User } from '@/components/admin/types'
 import { createContext, useContext, useState, useEffect } from 'react'
 
 interface DataContextType {
@@ -11,36 +12,36 @@ interface DataContextType {
   setSearchTerm: (term: string) => void
 }
 // Mock data
-const mockOrders: Order[] = [
-    {
-      id: '1',
-      customerName: 'John Doe',
-      restaurantName: 'Burger King',
-      status: 'pending',
-      total: 10.99,
-      date: new Date('2022-01-01T12:00:00.000Z'),
-      items: [
-        { id: '1', name: 'Whopper', quantity: 1, price: 5.99,ratings:5 },
-        { id: '2', name: 'Fries', quantity: 1, price: 2.99,ratings:5 },
-      ],
-      deliveryAddress: '123 Main St, Anytown, USA',
-      paymentMethod: 'Credit Card',
-    },
-    {
-      id: '2',
-      customerName: 'Jane Doe',
-      restaurantName: 'Pizza Hut',
-      status: 'preparing',
-      total: 15.99,
-      date: new Date('2022-01-02T13:00:00.000Z'),
-      items: [
-        { id: '3', name: 'Pepperoni Pizza', quantity: 1, price: 12.99,ratings:4 },
-        { id: '4', name: 'Garlic Bread', quantity: 1, price: 3.00,ratings:4 },
-      ],
-      deliveryAddress: '456 Elm St, Othertown, USA',
-      paymentMethod: 'PayPal',
-    },
-  ]
+// const mockOrders: Order[] = [
+//     {
+//       id: '1',
+//       customerName: 'John Doe',
+//       restaurantName: 'Burger King',
+//       status: 'pending',
+//       total: 10.99,
+//       date: new Date('2022-01-01T12:00:00.000Z'),
+//       items: [
+//         { id: '1', name: 'Whopper', quantity: 1, price: 5.99,ratings:5 },
+//         { id: '2', name: 'Fries', quantity: 1, price: 2.99,ratings:5 },
+//       ],
+//       deliveryAddress: '123 Main St, Anytown, USA',
+//       paymentMethod: 'Credit Card',
+//     },
+//     {
+//       id: '2',
+//       customerName: 'Jane Doe',
+//       restaurantName: 'Pizza Hut',
+//       status: 'preparing',
+//       total: 15.99,
+//       date: new Date('2022-01-02T13:00:00.000Z'),
+//       items: [
+//         { id: '3', name: 'Pepperoni Pizza', quantity: 1, price: 12.99,ratings:4 },
+//         { id: '4', name: 'Garlic Bread', quantity: 1, price: 3.00,ratings:4 },
+//       ],
+//       deliveryAddress: '456 Elm St, Othertown, USA',
+//       paymentMethod: 'PayPal',
+//     },
+//   ]
   
   // const mockRestaurants: Restaurant[] = [
   //   { id: '1', name: 'Burger King', cuisine: 'Fast Food', rating: 4.2 ,address:'noida'},

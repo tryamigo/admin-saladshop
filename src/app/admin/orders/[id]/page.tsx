@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react'
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { ArrowLeftIcon, Edit, Trash2, Save, X, Plus } from 'lucide-react'
+import { ArrowLeftIcon, Edit, Trash2, X, Plus } from 'lucide-react'
 import Link from 'next/link'
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
@@ -30,6 +30,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
+import { Order, OrderItem, OrderStatus } from '@/components/admin/types'
 
 const OrderDetails: React.FC = () => {
   const params = useParams();
@@ -99,7 +100,7 @@ const OrderDetails: React.FC = () => {
     }
   };
 
-  const handleUpdateItem = (itemId: string, field: keyof OrderItem, value: any) => {
+  const handleUpdateItem = (itemId: string, field: keyof OrderItem, value: string | number) => {
     if (!editedOrder) return;
     
     const updatedItems = editedOrder.items.map(item =>

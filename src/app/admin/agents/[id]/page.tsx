@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { ArrowLeftIcon } from 'lucide-react'
 import Link from 'next/link'
+import { DeliveryAgent } from '@/components/admin/types'
+import { useParams } from 'next/navigation'
 
 
 
@@ -29,9 +31,10 @@ const fetchDeliveryAgentDetails = async (id: string): Promise<DeliveryAgent> => 
   }
 }
 
-const DeliveryAgentDetails: React.FC<{ id: string }> = ({ id }) => {
+const DeliveryAgentDetails: React.FC = () => {
   const [agent, setAgent] = useState<DeliveryAgent | null>(null)
-
+  const params = useParams();
+  const id = params.id as string;
   useEffect(() => {
     fetchDeliveryAgentDetails(id).then(setAgent)
   }, [id])

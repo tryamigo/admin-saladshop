@@ -6,6 +6,7 @@ import { EyeIcon, PlusIcon } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import AddRestaurantModal from '@/components/AddRestaurantModal'
 import { useData } from '@/contexts/DataContext'
+import { Restaurant } from '@/components/admin/types'
 
 const RestaurantsContentPage: React.FC = () => {
   const [restaurants, setRestaurants] = useState<Restaurant[]>([])

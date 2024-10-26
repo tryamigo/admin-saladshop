@@ -8,16 +8,15 @@ import Link from 'next/link'
 import { useData } from '@/contexts/DataContext'
 import { useToast } from '@/hooks/use-toast'
 import CreateOrderModal from '@/components/CreateOrderModal'
+import { Order, Restaurant } from '@/components/admin/types'
 
 const OrdersContentPage: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState('all')
-  const [selectedOrders, setSelectedOrders] = useState<string[]>([])
   const { searchTerm } = useData() 
   const [orders, setOrders] = useState<Order[]>([])
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [restaurants, setRestaurants] = useState<Restaurant[]>([])
   const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
   const {toast} = useToast()
   const fetchRestaurants = async () => {
     setIsLoading(true)
@@ -29,7 +28,6 @@ const OrdersContentPage: React.FC = () => {
       const data = await response.json()
       setRestaurants(Array.isArray(data) ? data : []);
     } catch (err) {
-      setError('Failed to load restaurants')
       console.error(err)
     } finally {
       setIsLoading(false)
@@ -103,6 +101,9 @@ const OrdersContentPage: React.FC = () => {
      order.id.toLowerCase().includes(searchTerm.toLowerCase())) &&
     (statusFilter === 'all' || order.status === statusFilter)
   )
+  if(isLoading){
+    return <div>Loading...</div>
+  }
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">

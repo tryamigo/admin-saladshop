@@ -1,7 +1,7 @@
 'use client'
 import React, { useState, useEffect } from 'react'
 import { Button } from "@/components/ui/button"
-import { ArrowLeftIcon, Star, Plus, Edit, Save, X, MoreVertical, Trash2 } from 'lucide-react'
+import { ArrowLeftIcon, Plus, Edit, Save, X, Trash2 } from 'lucide-react'
 import Link from 'next/link'
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -20,6 +20,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
+import { MenuItem, Restaurant } from '@/components/admin/types'
 
 const RestaurantDetails: React.FC = () => {
   const params = useParams();
@@ -135,7 +136,7 @@ const RestaurantDetails: React.FC = () => {
     setEditingItemId(item.id);
   };
 
-  const handleEditChange = (itemId: string, field: keyof MenuItem, value: any) => {
+  const handleEditChange = (itemId: string, field: keyof MenuItem, value: string | number) => {
     setMenu(prevMenu =>
       prevMenu.map(item =>
         item.id === itemId ? { ...item, [field]: value } : item

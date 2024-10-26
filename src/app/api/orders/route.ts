@@ -23,8 +23,6 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { searchParams } = new URL(req.url);
-
       // Create new order
       return await handleRequest(req, 'POST', '/orders', body);
 
