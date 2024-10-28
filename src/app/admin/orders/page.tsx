@@ -58,9 +58,6 @@ const OrdersContentPage: React.FC = () => {
     setStatusFilter(event.target.value)
   }
 
-
-
-
   const handleCreateOrder = async (orderData: Partial<Order>) => {
     try {
       const response = await fetch('/api/orders', {

@@ -1,27 +1,26 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { ArrowLeftIcon, Edit, Trash2, X, Plus } from 'lucide-react'
-import Link from 'next/link'
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { Label } from "@/components/ui/label"
-import { useParams, useRouter } from 'next/navigation'
+import React, { useState, useEffect } from 'react';
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { ArrowLeftIcon, Edit, Trash2, X, Plus } from 'lucide-react';
+import Link from 'next/link';
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useParams, useRouter } from 'next/navigation';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
+} from "@/components/ui/select";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+} from "@/components/ui/dropdown-menu";
 import {
   Dialog,
   DialogContent,
@@ -29,18 +28,19 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog"
-import { Order, OrderItem, OrderStatus } from '@/components/admin/types'
+} from "@/components/ui/dialog";
+import { Order, OrderItem, OrderStatus } from '@/components/admin/types';
+import { AddressFields } from '@/components/AddressFields';
 
 const OrderDetails: React.FC = () => {
   const params = useParams();
   const router = useRouter();
   const id = params.id as string;
-  
-  const [order, setOrder] = useState<Order | null>(null)
-  const [isEditing, setIsEditing] = useState(false)
-  const [editedOrder, setEditedOrder] = useState<Order | null>(null)
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
+
+  const [order, setOrder] = useState<Order | null>(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editedOrder, setEditedOrder] = useState<Order | null>(null);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [newItem, setNewItem] = useState<OrderItem>({
     id: Date.now().toString(), // Generate a temporary ID
     name: '',
@@ -48,12 +48,12 @@ const OrderDetails: React.FC = () => {
     price: 0,
     ratings: 0
   });
+
   const fetchOrderDetails = async (id: string) => {
     try {
       const response = await fetch(`/api/orders?id=${id}`);
       if (!response.ok) throw new Error('Failed to fetch order details');
       const data = await response.json();
-      console.log("data is ",data)
       return data;
     } catch (error) {
       console.error('Error fetching order details:', error);
@@ -67,7 +67,7 @@ const OrderDetails: React.FC = () => {
 
   const handleEditOrder = async () => {
     if (!editedOrder) return;
-    
+
     try {
       const response = await fetch(`/api/orders?orderId=${id}`, {
         method: 'PUT',
@@ -76,7 +76,7 @@ const OrderDetails: React.FC = () => {
       });
 
       if (!response.ok) throw new Error('Failed to update order');
-      
+
       const updatedOrder = await response.json();
       setOrder(updatedOrder);
       setIsEditing(false);
@@ -92,7 +92,7 @@ const OrderDetails: React.FC = () => {
       });
 
       if (!response.ok) throw new Error('Failed to delete order');
-      
+
       setIsDeleteDialogOpen(false);
       router.push('/admin/orders');
     } catch (error) {
@@ -102,7 +102,7 @@ const OrderDetails: React.FC = () => {
 
   const handleUpdateItem = (itemId: string, field: keyof OrderItem, value: string | number) => {
     if (!editedOrder) return;
-    
+
     const updatedItems = editedOrder.items.map(item =>
       item.id === itemId ? { ...item, [field]: value } : item
     );
@@ -113,6 +113,7 @@ const OrderDetails: React.FC = () => {
       total: updatedItems.reduce((sum, item) => sum + (item.price * item.quantity), 0)
     });
   };
+
   const handleRemoveItem = (itemId: string) => {
     if (!editedOrder) return;
 
@@ -124,10 +125,11 @@ const OrderDetails: React.FC = () => {
       total: updatedItems.reduce((sum, item) => sum + (item.price * item.quantity), 0)
     });
   };
+
   const handleAddItem = () => {
     if (!editedOrder || !newItem.name || newItem.quantity <= 0 || newItem.price <= 0) return;
 
-    const updatedItems = [...editedOrder.items, { ...newItem, id: Date.now().toString() }];
+    const updatedItems = [...editedOrder .items, { ...newItem, id: Date.now().toString() }];
 
     setEditedOrder({
       ...editedOrder,
@@ -144,6 +146,7 @@ const OrderDetails: React.FC = () => {
       ratings: 0
     });
   };
+
   if (!order) return <div>Loading...</div>;
 
   return (
@@ -155,7 +158,7 @@ const OrderDetails: React.FC = () => {
             Back to Orders
           </Button>
         </Link>
-  
+
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline">Options</Button>
@@ -168,7 +171,7 @@ const OrderDetails: React.FC = () => {
               <Edit className="mr-2 h-4 w-4" />
               Edit Order
             </DropdownMenuItem>
-            <DropdownMenuItem 
+            <DropdownMenuItem
               className="text-red-600"
               onClick={() => setIsDeleteDialogOpen(true)}
             >
@@ -178,7 +181,7 @@ const OrderDetails: React.FC = () => {
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
-  
+
       <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <DialogContent>
           <DialogHeader>
@@ -197,7 +200,7 @@ const OrderDetails: React.FC = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-  
+
       {isEditing ? (
         <div className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -219,7 +222,7 @@ const OrderDetails: React.FC = () => {
               <Label>Status</Label>
               <Select
                 value={editedOrder?.status}
-                onValueChange={(value: OrderStatus) => 
+                onValueChange={(value: OrderStatus) =>
                   setEditedOrder(prev => ({ ...prev!, status: value }))
                 }
               >
@@ -234,13 +237,15 @@ const OrderDetails: React.FC = () => {
                 </SelectContent>
               </Select>
             </div>
-            <div className="space-y-2">
-              <Label>Delivery Address</Label>
-              <Textarea
-                value={editedOrder?.deliveryAddress || ''}
-                onChange={(e) => setEditedOrder(prev => ({ ...prev!, deliveryAddress: e.target.value }))}
-              />
-            </div>
+            <AddressFields
+              address={editedOrder?.deliveryAddress || {
+                street: '', area: '', city: '', state: '', postalCode: '', country: ''
+              }}
+              onChange={(updatedAddress) => {
+                setEditedOrder(prev => ({ ...prev!, deliveryAddress: updatedAddress }));
+              }}
+              isEditing={true}
+            />
             <div className="space-y-2">
               <Label>Payment Method</Label>
               <Input
@@ -249,12 +254,12 @@ const OrderDetails: React.FC = () => {
               />
             </div>
           </div>
-  
+
           <div className="space-y-4">
             <div className="flex justify-between items-center">
               <h3 className="font-medium">Order Items</h3>
             </div>
-            
+
             <table className="w-full">
               <thead>
                 <tr>
@@ -290,8 +295,8 @@ const OrderDetails: React.FC = () => {
                     </td>
                     <td>${(item.quantity * item.price).toFixed(2)}</td>
                     <td>
-                      <Button 
-                        variant="destructive" 
+                      <Button
+                        variant="destructive"
                         size="sm"
                         onClick={() => handleRemoveItem(item.id)}
                       >
@@ -325,8 +330,8 @@ const OrderDetails: React.FC = () => {
                   </td>
                   <td>${(newItem.quantity * newItem.price).toFixed(2)}</td>
                   <td>
-                    <Button 
-                      variant="outline" 
+                    <Button
+                      variant="outline"
                       size="sm"
                       onClick={handleAddItem}
                     >
@@ -345,7 +350,7 @@ const OrderDetails: React.FC = () => {
               </tfoot>
             </table>
           </div>
-  
+
           <div className="flex gap-2">
             <Button onClick={handleEditOrder}>Save Changes</Button>
             <Button variant="outline" onClick={() => {
@@ -357,7 +362,7 @@ const OrderDetails: React.FC = () => {
       ) : (
         <div className="space-y-4">
           <h2 className="text-3xl font-bold mb-4">Order Details:</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap- 4">
+          < div className="grid grid-cols-1 md:grid-cols-2 ">
             <div className="space-y-2">
               <Label>Customer Name:</Label>
               <Badge variant="outline">{order?.customerName}</Badge>
@@ -370,16 +375,17 @@ const OrderDetails: React.FC = () => {
               <Label>Status:</Label>
               <Badge variant="outline">{order?.status}</Badge>
             </div>
-            <div className="space-y-2">
-              <Label>Delivery Address:</Label>
-              <Badge variant="outline">{order?.deliveryAddress}</Badge>
-            </div>
+           
             <div className="space-y-2">
               <Label>Payment Method:</Label>
               <Badge variant="outline">{order?.paymentMethod}</Badge>
             </div>
           </div>
-  
+
+          <AddressFields
+              address={order.deliveryAddress}
+              isEditing={false}
+            />
           <div className="space-y-4">
             <h3 className="font-medium">Order Items:</h3>
             <table className="w-full">

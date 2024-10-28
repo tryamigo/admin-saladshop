@@ -11,28 +11,28 @@ import { useParams } from 'next/navigation'
 
 
 // You would typically fetch this data from an API
-const fetchUserDetails = async (id: string): Promise<User> => {
-  // Simulated API call
-  return {
-    id,
-    name: "John Doe",
-    email: "john.doe@example.com",
-    registrationDate: new Date("2022-01-15"),
-    phoneNumber: "(555) 123-4567",
-    address: "123 Main St, Anytown, AN 12345",
-    orderHistory: [
-      { id: "ORD001", date: new Date("2023-05-01"), total: 25.99, status: "Delivered" },
-      { id: "ORD002", date: new Date("2023-05-15"), total: 32.50, status: "Processing" },
-    ]
-  }
-}
+// const fetchUserDetails = async (id: string): Promise<User> => {
+//   // Simulated API call
+//   return {
+//     id,
+//     name: "John Doe",
+//     email: "john.doe@example.com",
+//     registrationDate: new Date("2022-01-15"),
+//     phoneNumber: "(555) 123-4567",
+//     address: "123 Main St, Anytown, AN 12345",
+//     orderHistory: [
+//       { id: "ORD001", date: new Date("2023-05-01"), total: 25.99, status: "Delivered" },
+//       { id: "ORD002", date: new Date("2023-05-15"), total: 32.50, status: "Processing" },
+//     ]
+//   }
+// }
 
 const UserDetails: React.FC = () => {
   const [user, setUser] = useState<User | null>(null)
   const params = useParams();
   const id = params.id as string;
   useEffect(() => {
-    fetchUserDetails(id).then(setUser)
+    // fetchUserDetails(id).then(setUser)
   }, [id])
 
   if (!user) return <div>Loading...</div>
@@ -62,7 +62,7 @@ const UserDetails: React.FC = () => {
           <p><strong>ID:</strong> {user.id}</p>
           <p><strong>Email:</strong> {user.email}</p>
           <p><strong>Phone:</strong> {user.phoneNumber}</p>
-          <p><strong>Address:</strong> {user.address}</p>
+          {/* <p><strong>Address:</strong> {user.address}</p> */}
           <p><strong>Registration Date:</strong> {format(user.registrationDate, 'yyyy-MM-dd HH:mm')}</p>
         </div>
 

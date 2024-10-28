@@ -1,11 +1,12 @@
-import React, { useState } from 'react'
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Textarea } from "@/components/ui/textarea"
-import { Label } from "@/components/ui/label"
-import { Order, OrderItem, OrderStatus, Restaurant } from './admin/types'
+import React, { useState } from 'react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
+import { Address, Order, OrderItem, OrderStatus, Restaurant } from './admin/types';
+import { AddressFields } from './AddressFields';
+
 
 interface CreateOrderModalProps {
   isOpen: boolean;
@@ -27,34 +28,41 @@ const CreateOrderModal: React.FC<CreateOrderModalProps> = ({
     total: 0,
     date: new Date(),
     items: [],
-    deliveryAddress: '',
+    deliveryAddress: {
+      street: '',
+      area: '',
+      city: '',
+      state: '',
+      postalCode: '',
+      country: ''
+    } as Address,
     paymentMethod: ''
-  }
+  };
 
-  const [orderData, setOrderData] = useState<Partial<Order>>(initialOrderData)
+  const [orderData, setOrderData] = useState<Partial<Order>>(initialOrderData);
   const [currentItem, setCurrentItem] = useState<Partial<OrderItem>>({
     name: '',
     quantity: 1,
     price: 0,
     ratings: 0
-  })
+  });
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
     const calculatedTotal = orderData.items?.reduce(
       (sum, item) => sum + (item.price * item.quantity), 
       0
-    ) || 0
+    ) || 0;
 
     onSubmit({
       ...orderData,
       date: new Date(),
       total: calculatedTotal,
       status: 'pending' as OrderStatus
-    })
-    setOrderData(initialOrderData)
-    onClose()
-  }
+    });
+    setOrderData(initialOrderData);
+    onClose();
+  };
 
   const handleAddItem = () => {
     if (currentItem.name && currentItem.price) {
@@ -67,26 +75,26 @@ const CreateOrderModal: React.FC<CreateOrderModalProps> = ({
           price: currentItem.price || 0,
           ratings: currentItem.ratings || 0
         }]
-      }))
+      }));
       setCurrentItem({
         name: '',
         quantity: 1,
         price: 0,
         ratings: 0
-      })
+      });
     }
-  }
+  };
 
   const handleRemoveItem = (itemId: string) => {
     setOrderData(prev => ({
       ...prev,
       items: prev.items?.filter(item => item.id !== itemId) || []
-    }))
-  }
+    }));
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Create New Order</DialogTitle>
         </DialogHeader>
@@ -98,7 +106,7 @@ const CreateOrderModal: React.FC<CreateOrderModalProps> = ({
               <Input 
                 id="customerName"
                 placeholder="Customer Name" 
-                value={orderData.customerName} 
+                value={orderData.customerName ?? ''} 
                 onChange={(e) => setOrderData({...orderData, customerName: e.target.value})}
                 required
               />
@@ -108,13 +116,14 @@ const CreateOrderModal: React.FC<CreateOrderModalProps> = ({
             <div className="space-y-2">
               <Label>Restaurant</Label>
               <Select 
+                value={orderData.restaurantName ?? ''}
                 onValueChange={(value) => {
-                  const selectedRestaurant = restaurants.find(r => r.id === value)
+                  const selectedRestaurant = restaurants.find(r => r.id === value);
                   if (selectedRestaurant) {
                     setOrderData({
                       ...orderData, 
-                      restaurantName: selectedRestaurant.name
-                    })
+                      restaurantName: value
+                    });
                   }
                 }}
               >
@@ -133,13 +142,15 @@ const CreateOrderModal: React.FC<CreateOrderModalProps> = ({
 
             {/* Delivery Address */}
             <div className="col-span-2 space-y-2">
-              <Label htmlFor="deliveryAddress">Delivery Address</Label>
-              <Textarea 
-                id="deliveryAddress"
-                placeholder="Delivery Address" 
-                value={orderData.deliveryAddress} 
-                onChange={(e) => setOrderData({...orderData, deliveryAddress: e.target.value})}
-                required
+              <h3 className="font-medium">Delivery Address</h3>
+             <AddressFields
+                address={orderData.deliveryAddress || {
+                  street: '', area: '', city: '', state: '', postalCode: '', country: ''
+                }}
+                onChange={(updatedAddress) => {
+                  setOrderData(prev => ({ ...prev, deliveryAddress: updatedAddress }));
+                }}
+                isEditing={true}
               />
             </div>
 
@@ -147,6 +158,7 @@ const CreateOrderModal: React.FC<CreateOrderModalProps> = ({
             <div className="space-y-2">
               <Label>Payment Method</Label>
               <Select 
+                value={orderData.paymentMethod ?? ''}
                 onValueChange={(value) => setOrderData({...orderData, paymentMethod: value})}
               >
                 <SelectTrigger>
@@ -178,7 +190,7 @@ const CreateOrderModal: React.FC<CreateOrderModalProps> = ({
                 value={currentItem.quantity || ''}
                 onChange={(e) => setCurrentItem({
                   ...currentItem, 
-                  quantity: parseInt(e.target.value)
+                  quantity: parseInt(e.target.value) || 1 // Ensure valid number
                 })}
                 min="1"
               />
@@ -188,7 +200,7 @@ const CreateOrderModal: React.FC<CreateOrderModalProps> = ({
                 value={currentItem.price || ''}
                 onChange={(e) => setCurrentItem({
                   ...currentItem, 
-                  price: parseFloat(e.target.value)
+                  price: parseFloat(e.target.value) || 0 // Ensure valid number
                 })}
                 min="0"
                 step="0.01"
@@ -235,8 +247,13 @@ const CreateOrderModal: React.FC<CreateOrderModalProps> = ({
             className="w-full"
             disabled={!orderData.customerName || 
                      !orderData.restaurantName || 
-                     !orderData.deliveryAddress || 
-                     ! orderData.paymentMethod || 
+                     !orderData.deliveryAddress?.street || 
+                     !orderData.deliveryAddress?.area || 
+                     !orderData.deliveryAddress?.city || 
+                     !orderData.deliveryAddress?.state || 
+                     !orderData.deliveryAddress?.postalCode || 
+                     !orderData.deliveryAddress?.country || 
+                     !orderData.paymentMethod || 
                      orderData.items?.length === 0}
           >
             Create Order
@@ -244,7 +261,7 @@ const CreateOrderModal: React.FC<CreateOrderModalProps> = ({
         </form>
       </DialogContent>
     </Dialog>
-  )
-}
+  );
+};
 
-export default CreateOrderModal
+export default CreateOrderModal;

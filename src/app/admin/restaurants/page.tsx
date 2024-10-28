@@ -108,7 +108,18 @@ const RestaurantsContentPage: React.FC = () => {
                   {Number(restaurant.rating).toFixed(1)}
                 </Badge>
               </td>
-              <td className="p-2">{restaurant.address}</td>
+              <td className="p-2">
+  {restaurant.address && (
+    <>
+      <div>{restaurant.address.street}</div>
+      {restaurant.address.area && <div>{restaurant.address.area}</div>}
+      <div>{restaurant.address.city}</div>
+      <div>{restaurant.address.state}</div>
+      <div>{restaurant.address.postalCode}</div>
+      <div>{restaurant.address.country}</div>
+    </>
+  )}
+</td>
               <td className="p-2">{restaurant.phoneNumber}</td>
               <td className="p-2">{restaurant.openingHours}</td>
               <td className="p-2">

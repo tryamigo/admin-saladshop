@@ -1,17 +1,18 @@
-'use client'
-import React, { useState, useEffect } from 'react'
-import { Button } from "@/components/ui/button"
-import { ArrowLeftIcon, Plus, Edit, Save, X, Trash2 } from 'lucide-react'
-import Link from 'next/link'
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { useParams, useRouter } from 'next/navigation'
+// src/app/page.tsx
+'use client';
+import React, { useState, useEffect } from 'react';
+import { Button } from "@/components/ui/button";
+import { ArrowLeftIcon, Plus, Edit, Save, X, Trash2 } from 'lucide-react';
+import Link from 'next/link';
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useParams, useRouter } from 'next/navigation';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+} from "@/components/ui/dropdown-menu";
 import {
   Dialog,
   DialogContent,
@@ -19,8 +20,9 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog"
-import { MenuItem, Restaurant } from '@/components/admin/types'
+} from "@/components/ui/dialog";
+import { MenuItem, Restaurant } from '@/components/admin/types';
+import { AddressFields } from '@/components/AddressFields';
 
 const RestaurantDetails: React.FC = () => {
   const params = useParams();
@@ -63,7 +65,7 @@ const RestaurantDetails: React.FC = () => {
 
   const handleEditRestaurant = async () => {
     if (!editedRestaurant) return;
-    
+
     try {
       const response = await fetch(`/api/restaurants/${id}`, {
         method: 'PUT',
@@ -72,7 +74,7 @@ const RestaurantDetails: React.FC = () => {
       });
 
       if (!response.ok) throw new Error('Failed to update restaurant');
-      
+
       const updatedRestaurant = await response.json();
       setRestaurant(updatedRestaurant);
       setIsEditing(false);
@@ -94,7 +96,7 @@ const RestaurantDetails: React.FC = () => {
     if (itemId) setMenuItemToDelete(itemId);
     setIsDeleteDialogOpen(true);
   };
-  
+
   const handleDeleteRestaurant = async () => {
     try {
       const response = await fetch(`/api/restaurants/${id}`, {
@@ -102,7 +104,7 @@ const RestaurantDetails: React.FC = () => {
       });
 
       if (!response.ok) throw new Error('Failed to delete restaurant');
-      
+
       setIsDeleteDialogOpen(false);
       router.push('/admin/restaurants');
     } catch (error) {
@@ -118,7 +120,7 @@ const RestaurantDetails: React.FC = () => {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(newItem),
         });
-  
+
         if (response.ok) {
           const addedItem = await response.json();
           setMenu([...menu, addedItem]);
@@ -131,7 +133,7 @@ const RestaurantDetails: React.FC = () => {
       }
     }
   };
-  
+
   const handleEditItem = (item: MenuItem) => {
     setEditingItemId(item.id);
   };
@@ -201,9 +203,9 @@ const RestaurantDetails: React.FC = () => {
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-          <Button variant="ghost" className="flex items-center justify-center h-10 px-4 text-gray-700 bg-white rounded-md shadow-sm hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition duration-150 ease-in-out font-bold">
-          Options
-        </Button>
+            <Button variant="ghost" className="flex items-center justify-center h-10 px-4 text-gray-700 bg-white rounded-md shadow-sm hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition duration-150 ease-in-out font-bold">
+              Options
+            </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuItem onClick={() => {
@@ -213,7 +215,7 @@ const RestaurantDetails: React.FC = () => {
               <Edit className="mr-2 h-4 w-4" />
               Edit Restaurant
             </DropdownMenuItem>
-            <DropdownMenuItem 
+            <DropdownMenuItem
               className="text-red-600"
               onClick={() => openDeleteDialog('restaurant')}
             >
@@ -225,26 +227,26 @@ const RestaurantDetails: React.FC = () => {
       </div>
 
       <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-  <DialogContent>
-    <DialogHeader>
-      <DialogTitle>
-        Delete {deleteType === 'restaurant' ? 'Restaurant' : 'Menu Item'}
-      </DialogTitle>
-    </DialogHeader>
-    <DialogDescription>
-      Are you sure you want to delete this {deleteType === 'restaurant' ? 'restaurant' : 'menu item'}?
-      This action cannot be undone.
-    </DialogDescription>
-    <DialogFooter>
-      <Button variant="destructive" onClick={handleDelete}>
-        Delete
-      </Button>
-      <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)}>
-        Cancel
-      </Button>
-    </DialogFooter>
-  </DialogContent>
-</Dialog>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              Delete {deleteType === 'restaurant' ? 'Restaurant' : 'Menu Item'}
+            </DialogTitle>
+          </DialogHeader>
+          <DialogDescription>
+            Are you sure you want to delete this {deleteType === 'restaurant' ? 'restaurant' : 'menu item'}?
+            This action cannot be undone.
+          </DialogDescription>
+          <DialogFooter>
+            <Button variant="destructive" onClick={handleDelete}>
+              Delete
+            </Button>
+            <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)}>
+              Cancel
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {isEditing ? (
         <div className="bg-white p-4 rounded shadow mb-4">
@@ -278,14 +280,15 @@ const RestaurantDetails: React.FC = () => {
                 onChange={(e) => setEditedRestaurant(prev => ({ ...prev!, rating: parseFloat(e.target.value) }))}
               />
             </div>
-            <div>
-              <Label htmlFor="address">Address</Label>
-              <Input
-                id="address"
-                value={editedRestaurant?.address || ''}
-                onChange={(e) => setEditedRestaurant(prev => ({ ...prev!, address: e.target.value }))}
-              />
-            </div>
+            <AddressFields
+              address={editedRestaurant?.address || {
+                street: '', area: '', city: '', state: '', postalCode: '', country: ''
+              }}
+              onChange={(updatedAddress) => {
+                setEditedRestaurant(prev => ({ ...prev!, address: updatedAddress }));
+              }}
+              isEditing={true}
+            />
             <div>
               <Label htmlFor="phoneNumber">Phone Number</Label>
               <Input
@@ -313,11 +316,15 @@ const RestaurantDetails: React.FC = () => {
         </div>
       ) : (
         <div className="mb-4">
-          <p><strong>Cuisine:</strong> {restaurant.cuisine}</p>
-          <p><strong>Rating:</strong> {restaurant.rating}</p>
-          <p><strong>Address:</strong> {restaurant.address}</p>
-          <p><strong>Phone:</strong> {restaurant.phoneNumber}</p>
-          <p><strong>Hours:</strong> {restaurant.openingHours}</p>
+          <p>Cuisine: {restaurant.cuisine}</p>
+          <p>Rating: {restaurant.rating}</p>
+          <AddressFields
+            address={restaurant.address}
+            isEditing={false}
+          />
+          
+          <p>Phone: {restaurant.phoneNumber}</p>
+          <p>Hours: {restaurant.openingHours}</p>
         </div>
       )}
 
@@ -355,7 +362,7 @@ const RestaurantDetails: React.FC = () => {
                         value={item.price || ''}
                         onChange={(e) => handleEditChange(item.id, 'price', e.target.value ? parseFloat(e.target.value) : 0)}
                       />
- </td>
+                    </td>
                     <td className="py-2">
                       <Button onClick={handleSaveEdit} className="mr-2"><Save className="h-4 w-4" /></Button>
                       <Button onClick={handleCancelEdit} variant="destructive"><X className="h-4 w-4" /></Button>
@@ -365,17 +372,17 @@ const RestaurantDetails: React.FC = () => {
                   <>
                     <td className="py-2">{item.name}</td>
                     <td className="py-2">{item.description}</td>
-                    <td className="py-2">${Number(item.price).toFixed(2) }</td>
+                    <td className="py-2">${Number(item.price).toFixed(2)}</td>
                     <td className="py-2">
                       <Button onClick={() => handleEditItem(item)}><Edit className="h-4 w-4" /></Button>
                     </td>
                     <td className="py-2">
-                    <Button 
-          onClick={() => openDeleteDialog('menuItem', item.id)} 
-          variant="destructive"
-        >
-          <X className="h-4 w-4" />
-        </Button>                    </td>
+                      <Button
+                        onClick={() => openDeleteDialog('menuItem', item.id)}
+                        variant="destructive"
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>                    </ td>
                   </>
                 )}
               </tr>
@@ -396,7 +403,7 @@ const RestaurantDetails: React.FC = () => {
             </div>
             <div>
               <Label htmlFor="price">Price</Label>
-              <Input id="price" type="number" value={newItem.price|| ''} onChange={(e) => setNewItem({ ...newItem, price: parseFloat(e.target.value) })} />
+              <Input id="price" type="number" value={newItem.price || ''} onChange={(e) => setNewItem({ ...newItem, price: parseFloat(e.target.value) })} />
             </div>
             <div className="flex items-end">
               <Button onClick={handleAddItem}><Plus className="h-4 w-4 mr -2" /> Add Item</Button>
