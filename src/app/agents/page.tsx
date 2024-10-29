@@ -11,6 +11,7 @@ import { DeliveryAgent, Order } from '@/components/admin/types';
 import AddAgentModal from '@/components/AddAgentModal';
 import CompleteDeliveryModal from '@/components/CompleteDeliveryModal';
 import { useToast } from '@/hooks/use-toast';
+import { useSession } from 'next-auth/react';
 
 const DeliveryAgentsContentPage: React.FC = () => {
     // Initialize deliveryAgents as an empty array
@@ -22,9 +23,15 @@ const DeliveryAgentsContentPage: React.FC = () => {
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [isCompleteModalOpen, setIsCompleteModalOpen] = useState(false);
     const {toast} = useToast()
+    const {data : session } =useSession()
     const fetchOrders = async () => {
         try {
-            const response = await fetch('/api/orders');
+            const response = await fetch('/api/orders',{
+                headers:{
+                    Authorization: `Bearer ${session?.user.accessToken}`,
+
+                }
+            });
             if (!response.ok) throw new Error('Failed to fetch orders');
             const data = await response.json();
             setOrders(data);
@@ -36,7 +43,11 @@ const DeliveryAgentsContentPage: React.FC = () => {
 
     const loadDeliveryAgents = async () => {
         try {
-            const response = await fetch('/api/agents');
+            const response = await fetch('/api/agents',{
+                headers:{
+                 Authorization: `Bearer ${session?.user.accessToken}`,
+                }
+            });
             if (!response.ok) throw new Error('Failed to fetch delivery agents');
             const data = await response.json();
             // Ensure that the data is an array before setting it
@@ -69,6 +80,8 @@ const DeliveryAgentsContentPage: React.FC = () => {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    Authorization: `Bearer ${session?.user.accessToken}`,
+
                 },
                 body: JSON.stringify({
                     ...agentData,
@@ -93,6 +106,8 @@ const DeliveryAgentsContentPage: React.FC = () => {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    Authorization: `Bearer ${session?.user.accessToken}`,
+
                 },
                 body: JSON.stringify(assignmentData),
             });
@@ -132,6 +147,8 @@ const DeliveryAgentsContentPage: React.FC = () => {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
+              Authorization: `Bearer ${session?.user.accessToken}`,
+
             },
             body: JSON.stringify(assignmentData),
           });

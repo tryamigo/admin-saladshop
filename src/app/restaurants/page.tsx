@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import AddRestaurantModal from '@/components/AddRestaurantModal'
 import { useData } from '@/contexts/DataContext'
 import { Restaurant } from '@/components/admin/types'
+import { useSession } from 'next-auth/react'
 
 const RestaurantsContentPage: React.FC = () => {
   const [restaurants, setRestaurants] = useState<Restaurant[]>([])
@@ -14,11 +15,17 @@ const RestaurantsContentPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null)
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
   const { searchTerm } = useData()
+  const {data : session} =useSession()
 
   const fetchRestaurants = async () => {
     setIsLoading(true)
     try {
-      const response = await fetch('/api/restaurants')
+      const response = await fetch('/api/restaurants',{
+        headers:{
+          Authorization: `Bearer ${session?.user.accessToken}`,
+
+        }
+      })
       if (!response.ok) {
         throw new Error('Failed to fetch restaurants')
       }
@@ -38,6 +45,8 @@ const RestaurantsContentPage: React.FC = () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          Authorization: `Bearer ${session?.user.accessToken}`,
+
         },
         body: JSON.stringify(restaurantData),
       })

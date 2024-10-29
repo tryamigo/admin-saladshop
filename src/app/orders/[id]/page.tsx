@@ -31,6 +31,7 @@ import {
 } from "@/components/ui/dialog";
 import { Order, OrderItem, OrderStatus } from '@/components/admin/types';
 import { AddressFields } from '@/components/AddressFields';
+import { useSession } from 'next-auth/react';
 
 const OrderDetails: React.FC = () => {
   const params = useParams();
@@ -48,10 +49,16 @@ const OrderDetails: React.FC = () => {
     price: 0,
     ratings: 0
   });
+  const {data : session } =useSession()
 
   const fetchOrderDetails = async (id: string) => {
     try {
-      const response = await fetch(`/api/orders?id=${id}`);
+      const response = await fetch(`/api/orders?id=${id}`,{
+        headers:{
+          Authorization: `Bearer ${session?.user.accessToken}`,
+
+        }
+      });
       if (!response.ok) throw new Error('Failed to fetch order details');
       const data = await response.json();
       return data;
@@ -71,7 +78,10 @@ const OrderDetails: React.FC = () => {
     try {
       const response = await fetch(`/api/orders?orderId=${id}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json',
+          Authorization: `Bearer ${session?.user.accessToken}`,
+
+         },
         body: JSON.stringify(editedOrder),
       });
 
@@ -89,6 +99,10 @@ const OrderDetails: React.FC = () => {
     try {
       const response = await fetch(`/api/orders?orderId=${id}`, {
         method: 'DELETE',
+        headers:{
+          Authorization: `Bearer ${session?.user.accessToken}`,
+
+        }
       });
 
       if (!response.ok) throw new Error('Failed to delete order');

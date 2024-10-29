@@ -9,6 +9,7 @@ import { useData } from '@/contexts/DataContext'
 import { useToast } from '@/hooks/use-toast'
 import CreateOrderModal from '@/components/CreateOrderModal'
 import { Order, Restaurant } from '@/components/admin/types'
+import { useSession } from 'next-auth/react'
 
 const OrdersContentPage: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState('all')
@@ -18,10 +19,16 @@ const OrdersContentPage: React.FC = () => {
   const [restaurants, setRestaurants] = useState<Restaurant[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const {toast} = useToast()
+  const {data : session} = useSession()
   const fetchRestaurants = async () => {
     setIsLoading(true)
     try {
-      const response = await fetch('/api/restaurants')
+      const response = await fetch('/api/restaurants',{
+        headers:{
+          Authorization: `Bearer ${session?.user.accessToken}`,
+
+        }
+      })
       if (!response.ok) {
         throw new Error('Failed to fetch restaurants')
       }
@@ -37,7 +44,11 @@ const OrdersContentPage: React.FC = () => {
    // Fetch orders from the API
    const fetchOrders = async () => {
     try {
-      const response = await fetch('/api/orders') // Adjust the API endpoint as needed
+      const response = await fetch('/api/orders',{
+        headers:{
+          Authorization: `Bearer ${session?.user.accessToken}`,
+        }
+      }) // Adjust the API endpoint as needed
       if (!response.ok) throw new Error('Failed to fetch orders')
       const data = await response.json()
       setOrders(data)
@@ -64,6 +75,8 @@ const OrdersContentPage: React.FC = () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          Authorization: `Bearer ${session?.user.accessToken}`,
+
         },
         body: JSON.stringify(orderData),
       })

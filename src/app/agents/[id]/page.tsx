@@ -31,6 +31,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { AddressFields } from '@/components/AddressFields'
+import { useSession } from 'next-auth/react'
 
 const DeliveryAgentDetails: React.FC = () => {
   const [agent, setAgent] = useState<DeliveryAgent | null>(null);
@@ -38,7 +39,7 @@ const DeliveryAgentDetails: React.FC = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [editedAgent, setEditedAgent] = useState<DeliveryAgent | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  
+  const {data :session} =useSession()
   const params = useParams();
   const router = useRouter();
   const id = params.id as string;
@@ -46,7 +47,11 @@ const DeliveryAgentDetails: React.FC = () => {
   useEffect(() => {
     const loadAgentDetails = async () => {
       try {
-        const response = await fetch(`/api/agents?id=${id}`);
+        const response = await fetch(`/api/agents?id=${id}`,{
+          headers: {
+            Authorization: `Bearer ${session?.user.accessToken}`,
+          },
+        });
         const agentDetails = await response.json();
         setAgent(agentDetails.agent);
       } catch (error) {
@@ -65,7 +70,9 @@ const DeliveryAgentDetails: React.FC = () => {
     try {
       const response = await fetch(`/api/agents?id=${id}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json',
+          Authorization: `Bearer ${session?.user.accessToken}`,
+         },
         body: JSON.stringify(editedAgent),
       });
 
@@ -83,6 +90,9 @@ const DeliveryAgentDetails: React.FC = () => {
     try {
       const response = await fetch(`/api/agents?id=${id}`, {
         method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${session?.user.accessToken}`,
+         },
       });
 
       if (!response.ok) throw new Error('Failed to delete agent');

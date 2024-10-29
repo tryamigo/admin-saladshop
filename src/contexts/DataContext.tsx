@@ -1,6 +1,7 @@
 // contexts/DataContext.tsx
 'use client'
 import { DeliveryAgent, Order, Restaurant, User } from '@/components/admin/types'
+import { useSession } from 'next-auth/react'
 import { createContext, useContext, useState, useEffect } from 'react'
 
 interface DataContextType {
@@ -20,11 +21,16 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   const [deliveryAgents, setDeliveryAgents] = useState<DeliveryAgent[]>([])
   const [users, setUsers] = useState<User[]>([])
   const [searchTerm, setSearchTerm] = useState('')
-
+  const {data:session} = useSession()
   const fetchRestaurants = async () => {
    
     try {
-      const response = await fetch('/api/restaurants')
+      const response = await fetch('/api/restaurants',{
+        headers:{
+          Authorization: `Bearer ${session?.user.accessToken}`,
+
+        }
+      })
       if (!response.ok) {
         throw new Error('Failed to fetch restaurants')
       }
@@ -38,7 +44,12 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
    // Fetch orders from the API
    const fetchOrders = async () => {
     try {
-      const response = await fetch('/api/orders') // Adjust the API endpoint as needed
+      const response = await fetch('/api/orders',{
+        headers:{
+          Authorization: `Bearer ${session?.user.accessToken}`,
+
+        }
+      }) // Adjust the API endpoint as needed
       if (!response.ok) throw new Error('Failed to fetch orders')
       const data = await response.json()
       setOrders(data)
@@ -49,7 +60,12 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   }
   const fetchDeliveryAgents = async () => {
     try {
-        const response = await fetch('/api/agents');
+        const response = await fetch('/api/agents',{
+          headers:{
+            Authorization: `Bearer ${session?.user.accessToken}`,
+
+          }
+        });
         if (!response.ok) throw new Error('Failed to fetch delivery agents');
         const data = await response.json();
         // Ensure that the data is an array before setting it

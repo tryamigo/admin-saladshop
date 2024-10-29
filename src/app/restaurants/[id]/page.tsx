@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/dialog";
 import { MenuItem, Restaurant } from '@/components/admin/types';
 import { AddressFields } from '@/components/AddressFields';
+import { useSession } from 'next-auth/react';
 
 const RestaurantDetails: React.FC = () => {
   const params = useParams();
@@ -37,8 +38,13 @@ const RestaurantDetails: React.FC = () => {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [deleteType, setDeleteType] = useState<'restaurant' | 'menuItem'>('restaurant');
   const [menuItemToDelete, setMenuItemToDelete] = useState<string | null>(null);
+  const {data : session} =useSession()
   const fetchRestaurantDetails = async (id: string): Promise<Restaurant> => {
-    const response = await fetch(`/api/restaurants/${id}`);
+    const response = await fetch(`/api/restaurants/${id}`,{
+      headers:{
+        Authorization: `Bearer ${session?.user.accessToken}`,
+      }
+    });
     if (!response.ok) {
       throw new Error('Failed to fetch restaurant details');
     }
@@ -46,7 +52,11 @@ const RestaurantDetails: React.FC = () => {
   };
 
   const fetchMenu = async (id: string): Promise<MenuItem[]> => {
-    const response = await fetch(`/api/restaurants/${id}/menu`);
+    const response = await fetch(`/api/restaurants/${id}/menu`,{
+      headers:{
+        Authorization: `Bearer ${session?.user.accessToken}`,
+      }
+    });
     if (!response.ok) {
       throw new Error('Failed to fetch menu');
     }
@@ -69,7 +79,10 @@ const RestaurantDetails: React.FC = () => {
     try {
       const response = await fetch(`/api/restaurants/${id}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json' ,
+          Authorization: `Bearer ${session?.user.accessToken}`,
+
+        },
         body: JSON.stringify(editedRestaurant),
       });
 
@@ -101,6 +114,7 @@ const RestaurantDetails: React.FC = () => {
     try {
       const response = await fetch(`/api/restaurants/${id}`, {
         method: 'DELETE',
+        headers: { Authorization: `Bearer ${session?.user.accessToken}`}
       });
 
       if (!response.ok) throw new Error('Failed to delete restaurant');
@@ -117,7 +131,10 @@ const RestaurantDetails: React.FC = () => {
       try {
         const response = await fetch(`/api/restaurants/${restaurant?.id}/menu`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json',
+            Authorization: `Bearer ${session?.user.accessToken}`,
+
+           },
           body: JSON.stringify(newItem),
         });
 
@@ -155,7 +172,10 @@ const RestaurantDetails: React.FC = () => {
 
       const response = await fetch(`/api/restaurants/${id}/menu/?id=${editingItemId}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json',
+          Authorization: `Bearer ${session?.user.accessToken}`,
+
+         },
         body: JSON.stringify(itemToUpdate),
       });
 
@@ -175,6 +195,10 @@ const RestaurantDetails: React.FC = () => {
     try {
       const response = await fetch(`/api/restaurants/${id}/menu/?id=${itemId}`, {
         method: 'DELETE',
+        headers:{
+          Authorization: `Bearer ${session?.user.accessToken}`,
+
+        }
       });
       if (!response.ok) throw new Error('Failed to delete menu item');
       const updatedMenu = menu.filter(item => item.id !== itemId);
