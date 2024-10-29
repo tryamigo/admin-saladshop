@@ -106,7 +106,7 @@ const RestaurantDetails: React.FC = () => {
       if (!response.ok) throw new Error('Failed to delete restaurant');
 
       setIsDeleteDialogOpen(false);
-      router.push('/admin/restaurants');
+      router.push('/restaurants');
     } catch (error) {
       console.error('Error deleting restaurant:', error);
     }
@@ -194,7 +194,7 @@ const RestaurantDetails: React.FC = () => {
   return (
     <div className="container mx-auto p-4">
       <div className="flex justify-between items-center mb-4">
-        <Link href="/admin/restaurants" passHref>
+        <Link href="/restaurants" passHref>
           <Button variant="outline">
             <ArrowLeftIcon className="mr-2 h-4 w-4" />
             Back to Restaurants

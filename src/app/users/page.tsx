@@ -48,7 +48,7 @@ const UsersContentPage: React.FC = () => {
               <td className="p-2">{user.email}</td>
               <td className="p-2">{format(user.registrationDate, 'yyyy-MM-dd HH:mm')}</td>
               <td className="p-2">
-                <Link href={`/admin/users/${user.id}`} passHref>
+                <Link href={`/users/${user.id}`} passHref>
                   <Button variant="ghost" size="sm">
                     <EyeIcon className="mr-2 h-4 w-4" />
                     View

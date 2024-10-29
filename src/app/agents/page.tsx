@@ -220,7 +220,7 @@ const DeliveryAgentsContentPage: React.FC = () => {
                             </td>
                             <td className="p-2">{agent.completedDeliveries}</td>
                             <td className="p-2">
-                                <Link href={`/admin/agents/${agent.id}`} passHref>
+                                <Link href={`/agents/${agent.id}`} passHref>
                                     <Button variant="ghost" size="sm">
                                         <EyeIcon className="mr-2 h-4 w-4" />
                                         View

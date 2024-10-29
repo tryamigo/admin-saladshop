@@ -123,7 +123,7 @@ const RestaurantsContentPage: React.FC = () => {
               <td className="p-2">{restaurant.phoneNumber}</td>
               <td className="p-2">{restaurant.openingHours}</td>
               <td className="p-2">
-                <Link href={`/admin/restaurants/${restaurant.id}`} passHref>
+                <Link href={`/restaurants/${restaurant.id}`} passHref>
                   <Button variant="ghost" size="sm">
                     <EyeIcon className="mr-2 h-4 w-4" />
                     View

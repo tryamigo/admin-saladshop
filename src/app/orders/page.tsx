@@ -162,7 +162,7 @@ const OrdersContentPage: React.FC = () => {
               </td>
               <td className="p-2">{format(order.date, 'PPp')}</td>
               <td className="p-2">
-                <Link href={`/admin/orders/${order.id}`} passHref>
+                <Link href={`/orders/${order.id}`} passHref>
                   <Button variant="ghost" size="sm">
                     <EyeIcon className="mr-2 h-4 w-4" />
                     View

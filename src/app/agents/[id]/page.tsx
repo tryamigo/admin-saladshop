@@ -88,7 +88,7 @@ const DeliveryAgentDetails: React.FC = () => {
       if (!response.ok) throw new Error('Failed to delete agent');
 
       setIsDeleteDialogOpen(false);
-      router.push('/admin/agents');
+      router.push('/agents');
     } catch (error) {
       console.error('Error deleting agent:', error);
     }
@@ -100,7 +100,7 @@ const DeliveryAgentDetails: React.FC = () => {
   return (
     <div className="container mx-auto p-4">
       <div className="flex justify-between items-center mb-4">
-        <Link href="/admin/agents" passHref>
+        <Link href="/agents" passHref>
           <Button variant="outline">
             <ArrowLeftIcon className="mr-2 h-4 w-4" />
             Back to Delivery Agents

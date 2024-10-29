@@ -94,7 +94,7 @@ const OrderDetails: React.FC = () => {
       if (!response.ok) throw new Error('Failed to delete order');
 
       setIsDeleteDialogOpen(false);
-      router.push('/admin/orders');
+      router.push('/orders');
     } catch (error) {
       console.error('Error deleting order:', error);
     }
@@ -152,7 +152,7 @@ const OrderDetails: React.FC = () => {
   return (
     <div className="container mx-auto p-4">
       <div className="flex justify-between items-center mb-4">
-        <Link href="/admin/orders" passHref>
+        <Link href="/orders" passHref>
           <Button variant="outline">
             <ArrowLeftIcon className="mr-2 h-4 w-4" />
             Back to Orders

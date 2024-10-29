@@ -39,7 +39,7 @@ const UserDetails: React.FC = () => {
 
   return (
     <div className="container mx-auto p-4">
-      <Link href="/admin/users" passHref>
+      <Link href="/users" passHref>
         <Button variant="outline" className="mb-4">
           <ArrowLeftIcon className="mr-2 h-4 w-4" />
           Back to Users
