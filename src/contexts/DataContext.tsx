@@ -70,7 +70,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         const data = await response.json();
         // Ensure that the data is an array before setting it
         if (Array.isArray(data.agents)) {
-          setDeliveryAgents(data.agents);
+          setDeliveryAgents(data.agents || []);
       
         } else {
           

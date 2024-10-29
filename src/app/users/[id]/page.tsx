@@ -10,22 +10,6 @@ import { User } from '@/components/admin/types'
 import { useParams } from 'next/navigation'
 
 
-// You would typically fetch this data from an API
-// const fetchUserDetails = async (id: string): Promise<User> => {
-//   // Simulated API call
-//   return {
-//     id,
-//     name: "John Doe",
-//     email: "john.doe@example.com",
-//     registrationDate: new Date("2022-01-15"),
-//     phoneNumber: "(555) 123-4567",
-//     address: "123 Main St, Anytown, AN 12345",
-//     orderHistory: [
-//       { id: "ORD001", date: new Date("2023-05-01"), total: 25.99, status: "Delivered" },
-//       { id: "ORD002", date: new Date("2023-05-15"), total: 32.50, status: "Processing" },
-//     ]
-//   }
-// }
 
 const UserDetails: React.FC = () => {
   const [user, setUser] = useState<User | null>(null)

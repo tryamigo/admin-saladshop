@@ -52,7 +52,7 @@ const DeliveryAgentsContentPage: React.FC = () => {
             const data = await response.json();
             // Ensure that the data is an array before setting it
             if (Array.isArray(data.agents)) {
-                setDeliveryAgents(data.agents);
+                setDeliveryAgents(data.agents || [] );
                 toast({
                     title: 'Delivery Agents Loaded',
                     description: data.message,
