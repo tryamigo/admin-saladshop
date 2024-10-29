@@ -4,8 +4,6 @@ import axios from 'axios';
 export const handleRequest= async (req: NextRequest, method: string, url: string, data?: any, params?: any) =>{
     try {
       // Extract the token from the Authorization header
-        const API_BASE_URL = "https://admin.navya.so/";
-        // const API_BASE_URL = "http://localhost:3001";
       const authHeader = req.headers.get('Authorization');
        const token = authHeader && authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null;
       if (!token) {
@@ -13,7 +11,7 @@ export const handleRequest= async (req: NextRequest, method: string, url: string
       }
       const response = await axios({
         method,
-        url: `${API_BASE_URL}${url}`,
+        url: `${process.env.BACKEND_API_URL}${url}`,
         data,
         params,
         headers: {

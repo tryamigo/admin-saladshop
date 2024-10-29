@@ -60,32 +60,28 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   }
   const fetchDeliveryAgents = async () => {
     try {
-        const response = await fetch('/api/agents',{
-          headers:{
-            Authorization: `Bearer ${session?.user.accessToken}`,
-
-          }
-        });
-        if (!response.ok) throw new Error('Failed to fetch delivery agents');
-        const data = await response.json();
-        // Ensure that the data is an array before setting it
-        if (Array.isArray(data.agents)) {
-          setDeliveryAgents(data.agents || []);
-      
-        } else {
-          
-            throw new Error('Expected an array of delivery agents');
-        }
+      const response = await fetch('/api/agents', {
+        headers: {
+          Authorization: `Bearer ${session?.user.accessToken}`,
+        },
+      });
+      if (!response.ok) throw new Error('Failed to fetch delivery agents');
+      const data = await response.json();
+      if (Array.isArray(data.agents)) {
+        setDeliveryAgents(data.agents || []);
+      } else {
+        throw new Error('Expected an array of delivery agents');
+      }
     } catch (error) {
-        console.error(error);
-
+      console.error('Error fetching delivery agents:', error);
     }
-};
+  };
+  
   useEffect(() => {
     fetchRestaurants()
     fetchOrders()
     fetchDeliveryAgents()
-  }, [])
+  }, [session])
  
 
   return (
