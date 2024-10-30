@@ -18,12 +18,13 @@ export const AddressFields: React.FC<AddressFieldsProps> = ({
   className = ''
 }) => {
   const addressFields = [
-    { key: 'street', label: 'Street' },
-    { key: 'area', label: 'Area' },
+    { key: 'streetAddress', label: 'Street Address' },
+    { key: 'landmark', label: 'Landmark' },
     { key: 'city', label: 'City' },
     { key: 'state', label: 'State' },
-    { key: 'postalCode', label: 'Postal Code' },
-    { key: 'country', label: 'Country' }
+    { key: 'pincode', label: 'Pincode' },
+    {key:'latitude',label:'latitude'},
+    {key:'longitude',label:'longitude'}
   ];
 
   if (isEditing) {

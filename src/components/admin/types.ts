@@ -2,12 +2,15 @@
 export type OrderStatus = 'pending' | 'preparing' | 'on the way' | 'delivered';
 
 export interface Address {
-  street: string; 
-  area: string; 
-  city: string; 
-  state: string;
-  postalCode: string; 
-  country: string; 
+id?: string;
+restaurantId?: string;
+streetAddress: string;
+latitude?: string;
+longitude?: string;
+landmark: string;
+city: string;
+state: string;
+pincode: string;
 
 }
 
@@ -34,8 +37,6 @@ export interface Order {
 export interface Restaurant {
   id: string;
   name: string;
-  cuisine: string;
-  rating: number;
   address: Address;
   phoneNumber: string;
   openingHours: string;
@@ -46,6 +47,9 @@ export interface MenuItem {
   name: string;
   description: string;
   price: number;
+  ratings?: number; // Add any other fields you need
+  discounts?: number; // If applicable
+  imageLink?: string; // If applicable
 }
 export type deliveryStatus = 'available' | 'on delivery' | 'offline';
 export interface DeliveryAgent {

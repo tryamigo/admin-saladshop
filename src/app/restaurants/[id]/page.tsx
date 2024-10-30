@@ -32,16 +32,16 @@ const RestaurantDetails: React.FC = () => {
   const [restaurant, setRestaurant] = useState<Restaurant | null>(null);
   const [menu, setMenu] = useState<MenuItem[]>([]);
   const [editingItemId, setEditingItemId] = useState<string | null>(null);
-  const [newItem, setNewItem] = useState<Omit<MenuItem, 'id'>>({ name: '', description: '', price: 0 });
+  const [newItem, setNewItem] = useState<Omit<MenuItem, 'id'>>({ name: '', description: '', price: 0, ratings: 0, discounts: 0, imageLink: '' });
   const [isEditing, setIsEditing] = useState(false);
   const [editedRestaurant, setEditedRestaurant] = useState<Restaurant | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [deleteType, setDeleteType] = useState<'restaurant' | 'menuItem'>('restaurant');
   const [menuItemToDelete, setMenuItemToDelete] = useState<string | null>(null);
-  const {data : session} =useSession()
+  const { data: session } = useSession()
   const fetchRestaurantDetails = async (id: string): Promise<Restaurant> => {
-    const response = await fetch(`/api/restaurants/${id}`,{
-      headers:{
+    const response = await fetch(`/api/restaurants/${id}`, {
+      headers: {
         Authorization: `Bearer ${session?.user.accessToken}`,
       }
     });
@@ -52,8 +52,8 @@ const RestaurantDetails: React.FC = () => {
   };
 
   const fetchMenu = async (id: string): Promise<MenuItem[]> => {
-    const response = await fetch(`/api/restaurants/${id}/menu`,{
-      headers:{
+    const response = await fetch(`/api/restaurants/${id}/menu`, {
+      headers: {
         Authorization: `Bearer ${session?.user.accessToken}`,
       }
     });
@@ -79,7 +79,8 @@ const RestaurantDetails: React.FC = () => {
     try {
       const response = await fetch(`/api/restaurants/${id}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' ,
+        headers: {
+          'Content-Type': 'application/json',
           Authorization: `Bearer ${session?.user.accessToken}`,
 
         },
@@ -114,7 +115,7 @@ const RestaurantDetails: React.FC = () => {
     try {
       const response = await fetch(`/api/restaurants/${id}`, {
         method: 'DELETE',
-        headers: { Authorization: `Bearer ${session?.user.accessToken}`}
+        headers: { Authorization: `Bearer ${session?.user.accessToken}` }
       });
 
       if (!response.ok) throw new Error('Failed to delete restaurant');
@@ -131,17 +132,18 @@ const RestaurantDetails: React.FC = () => {
       try {
         const response = await fetch(`/api/restaurants/${restaurant?.id}/menu`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json',
+          headers: {
+            'Content-Type': 'application/json',
             Authorization: `Bearer ${session?.user.accessToken}`,
 
-           },
+          },
           body: JSON.stringify(newItem),
         });
 
         if (response.ok) {
           const addedItem = await response.json();
           setMenu([...menu, addedItem]);
-          setNewItem({ name: '', description: '', price: 0 });
+          setNewItem({ name: '', description: '', price: 0, discounts: 0, imageLink: '' });
         } else {
           console.error('Failed to add menu item');
         }
@@ -172,10 +174,11 @@ const RestaurantDetails: React.FC = () => {
 
       const response = await fetch(`/api/restaurants/${id}/menu/?id=${editingItemId}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json',
+        headers: {
+          'Content-Type': 'application/json',
           Authorization: `Bearer ${session?.user.accessToken}`,
 
-         },
+        },
         body: JSON.stringify(itemToUpdate),
       });
 
@@ -195,7 +198,7 @@ const RestaurantDetails: React.FC = () => {
     try {
       const response = await fetch(`/api/restaurants/${id}/menu/?id=${itemId}`, {
         method: 'DELETE',
-        headers:{
+        headers: {
           Authorization: `Bearer ${session?.user.accessToken}`,
 
         }
@@ -284,29 +287,10 @@ const RestaurantDetails: React.FC = () => {
                 onChange={(e) => setEditedRestaurant(prev => ({ ...prev!, name: e.target.value }))}
               />
             </div>
-            <div>
-              <Label htmlFor="cuisine">Cuisine</Label>
-              <Input
-                id="cuisine"
-                value={editedRestaurant?.cuisine || ''}
-                onChange={(e) => setEditedRestaurant(prev => ({ ...prev!, cuisine: e.target.value }))}
-              />
-            </div>
-            <div>
-              <Label htmlFor="rating">Rating</Label>
-              <Input
-                id="rating"
-                type="number"
-                min="0"
-                max="5"
-                step="0.1"
-                value={editedRestaurant?.rating || 0}
-                onChange={(e) => setEditedRestaurant(prev => ({ ...prev!, rating: parseFloat(e.target.value) }))}
-              />
-            </div>
+
             <AddressFields
               address={editedRestaurant?.address || {
-                street: '', area: '', city: '', state: '', postalCode: '', country: ''
+                streetAddress: '', city: '', state: '', pincode: '', landmark: '', latitude: '', longitude: ''
               }}
               onChange={(updatedAddress) => {
                 setEditedRestaurant(prev => ({ ...prev!, address: updatedAddress }));
@@ -340,15 +324,14 @@ const RestaurantDetails: React.FC = () => {
         </div>
       ) : (
         <div className="mb-4">
-          <p>Cuisine: {restaurant.cuisine}</p>
-          <p>Rating: {restaurant.rating}</p>
+
           <AddressFields
             address={restaurant.address}
             isEditing={false}
           />
-          
+
           <p>Phone: {restaurant.phoneNumber}</p>
-          <p>Hours: {restaurant.openingHours}</p>
+          <p>Opening Hours: {restaurant.openingHours}</p>
         </div>
       )}
 
@@ -360,6 +343,9 @@ const RestaurantDetails: React.FC = () => {
               <th className="text-left">Item</th>
               <th className="text-left">Description</th>
               <th className="text-left">Price</th>
+              <th className="text-left">Ratings</th>
+              <th className="text-left">Discounts</th>
+              <th className="text-left">Images</th>
               <th className="text-left">Actions</th>
             </tr>
           </thead>
@@ -388,6 +374,26 @@ const RestaurantDetails: React.FC = () => {
                       />
                     </td>
                     <td className="py-2">
+                      <Input
+                        type="number"
+                        value={item.ratings || ''}
+                        onChange={(e) => handleEditChange(item.id, 'ratings', e.target.value ? parseFloat(e.target.value) : 0)}
+                      />
+                    </td>
+                    <td className="py-2">
+                      <Input
+                        type="number"
+                        value={item.discounts || ''}
+                        onChange={(e) => handleEditChange(item.id, 'discounts', e.target.value ? parseFloat(e.target.value) : 0)}
+                      />
+                    </td>
+                    <td className="py-2">
+                      <Input
+                        value={item.imageLink || ''}
+                        onChange={(e) => handleEditChange(item.id, 'imageLink', e.target.value)}
+                      />
+                    </td>
+                    <td className="py-2">
                       <Button onClick={handleSaveEdit} className="mr-2"><Save className="h-4 w-4" /></Button>
                       <Button onClick={handleCancelEdit} variant="destructive"><X className="h-4 w-4" /></Button>
                     </td>
@@ -397,6 +403,11 @@ const RestaurantDetails: React.FC = () => {
                     <td className="py-2">{item.name}</td>
                     <td className="py-2">{item.description}</td>
                     <td className="py-2">${Number(item.price).toFixed(2)}</td>
+                    <td className="py-2">{item.ratings}</td>
+                    <td className="py-2">{item.discounts}</td>
+                    <td className="py-2">
+                      <img src={item.imageLink} alt={item.name} className="w-16 h-16 object-cover rounded" />
+                    </td>
                     <td className="py-2">
                       <Button onClick={() => handleEditItem(item)}><Edit className="h-4 w-4" /></Button>
                     </td>
@@ -428,6 +439,18 @@ const RestaurantDetails: React.FC = () => {
             <div>
               <Label htmlFor="price">Price</Label>
               <Input id="price" type="number" value={newItem.price || ''} onChange={(e) => setNewItem({ ...newItem, price: parseFloat(e.target.value) })} />
+            </div>
+            <div>
+              <Label htmlFor="ratings">Ratings</Label>
+              <Input id="ratings" type="number" value={newItem.ratings || ''} onChange={(e) => setNewItem({ ...newItem, ratings: parseFloat(e.target.value) })} />
+            </div>
+            <div>
+              <Label htmlFor="discounts">Discounts</Label>
+              <Input id="discounts" type="number" value={newItem.discounts || ''} onChange={(e) => setNewItem({ ...newItem, discounts: parseFloat(e.target.value) })} />
+            </div>
+            <div>
+              <Label htmlFor="imageLink">Image</Label>
+              <Input id="imageLink" value={newItem.imageLink || ''} onChange={(e) => setNewItem({ ...newItem, imageLink: e.target.value })} />
             </div>
             <div className="flex items-end">
               <Button onClick={handleAddItem}><Plus className="h-4 w-4 mr -2" /> Add Item</Button>

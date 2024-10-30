@@ -15,9 +15,12 @@ const RestaurantsContentPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null)
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
   const { searchTerm } = useData()
-  const {data : session} =useSession()
+  const {data : session,status} =useSession()
 
   const fetchRestaurants = async () => {
+    if (status !== 'authenticated' || !session?.user?.accessToken) {
+      return;
+    }
     setIsLoading(true)
     try {
       const response = await fetch('/api/restaurants',{
@@ -31,6 +34,7 @@ const RestaurantsContentPage: React.FC = () => {
       }
       const data = await response.json()
       setRestaurants(Array.isArray(data) ? data : []);
+      
     } catch (err) {
       setError('Failed to load restaurants')
       console.error(err)
@@ -63,12 +67,11 @@ const RestaurantsContentPage: React.FC = () => {
 
   useEffect(() => {
     fetchRestaurants()
-  }, [])
+  }, [status,session])
 
   const filteredRestaurants = useMemo(() => {
     return restaurants.filter(restaurant =>
       restaurant.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      restaurant.cuisine.toLowerCase().includes(searchTerm.toLowerCase()) ||
       restaurant.id.toString().includes(searchTerm)
     )
   }, [restaurants, searchTerm])
@@ -90,7 +93,6 @@ const RestaurantsContentPage: React.FC = () => {
           <tr>
             <th className="h-10 px-2 text-left align-middle font-medium">No.</th>
             <th className="h-10 px-2 text-left align-middle font-medium">Name</th>
-            <th className="h-10 px-2 text-left align-middle font-medium">Cuisine</th>
             <th className="h-10 px-2 text-left align-middle font-medium">Rating</th>
             <th className="h-10 px-2 text-left align-middle font-medium">Address</th>
             <th className="h-10 px-2 text-left align-middle font-medium">Phone Number</th>
@@ -103,29 +105,19 @@ const RestaurantsContentPage: React.FC = () => {
             <tr key={restaurant.id} className="border-b transition-colors hover:bg-muted/50">
               <td className="p-2">{index + 1}</td>
               <td className="p-2">{restaurant.name}</td>
-              <td className="p-2">{restaurant.cuisine}</td>
               <td className="p-2">
-                <Badge
-                  variant={
-                    restaurant.rating >= 4
-                      ? 'outline'
- : restaurant.rating >= 3
-                      ? 'default'
-                      : 'destructive'
-                  }
-                >
-                  {Number(restaurant.rating).toFixed(1)}
-                </Badge>
+  
               </td>
               <td className="p-2">
   {restaurant.address && (
     <>
-      <div>{restaurant.address.street}</div>
-      {restaurant.address.area && <div>{restaurant.address.area}</div>}
+      <div>{restaurant.address.streetAddress}</div>
+      {restaurant.address.landmark && <div>{restaurant.address.landmark}</div>}
       <div>{restaurant.address.city}</div>
       <div>{restaurant.address.state}</div>
-      <div>{restaurant.address.postalCode}</div>
-      <div>{restaurant.address.country}</div>
+      <div>{restaurant.address.pincode}</div>
+      <div>{restaurant.address.latitude}</div>
+      <div>{restaurant.address.longitude}</div>
     </>
   )}
 </td>
