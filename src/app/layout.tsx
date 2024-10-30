@@ -26,14 +26,15 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   const pathname = usePathname();
-  const isSignInPage = pathname === '/signin';
+  const isAuthPage = pathname === '/signin' || pathname === '/error';
+  
 
   return (
     <html lang="en">
       <body>
         <SessionProvider>
           <DataProvider>
-            {isSignInPage ? children : <AdminLayout>{children}</AdminLayout>}
+            {isAuthPage ? children : <AdminLayout>{children}</AdminLayout>}
             <Toaster/>
           </DataProvider>
         </SessionProvider>

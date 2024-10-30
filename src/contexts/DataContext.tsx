@@ -21,9 +21,20 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   const [deliveryAgents, setDeliveryAgents] = useState<DeliveryAgent[]>([])
   const [users, setUsers] = useState<User[]>([])
   const [searchTerm, setSearchTerm] = useState('')
-  const {data:session} = useSession()
+  const {data:session,status} = useSession()
+
+  const fetchData = async () => {
+    if (status === "authenticated" && session?.user.accessToken) {
+      try {
+        await fetchRestaurants()
+        await fetchOrders()
+        await fetchDeliveryAgents()
+      } catch (error) {
+        console.error('Error fetching data:', error)
+      }
+    }
+  }
   const fetchRestaurants = async () => {
-   
     try {
       const response = await fetch('/api/restaurants',{
         headers:{
@@ -78,10 +89,8 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   };
   
   useEffect(() => {
-    fetchRestaurants()
-    fetchOrders()
-    fetchDeliveryAgents()
-  }, [session])
+    fetchData()
+  }, [status, session])
  
 
   return (

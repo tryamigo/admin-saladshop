@@ -31,9 +31,14 @@ const handler = NextAuth({
       return session;
     },
     async signIn({ user, account, profile }) {
+      const email = profile?.email;
+      if (!email || !email.endsWith('@amigo.gg')) {
+        console.error("Unauthorized email domain. Only @amigo.gg emails are allowed.");
+        return false;
+      }
       if (account?.provider === "google") {
         try {
-          const response = await fetch(`${apiUrl}/googleauth/google`, {
+          const response = await fetch(`${apiUrl}/admin/google`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -74,6 +79,7 @@ const handler = NextAuth({
   },
   pages: {
     signIn: '/signin',
+    error:'/error'
   },
   secret: process.env.NEXTAUTH_SECRET,
 });
