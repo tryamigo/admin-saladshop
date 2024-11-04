@@ -3,12 +3,20 @@
 import React, { useState, useEffect } from 'react'
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { ArrowLeftIcon, Edit, Trash2 } from 'lucide-react'
+import { ArrowLeftIcon, Edit, Trash2, Star, Package, Phone, Mail, IdCard, Calendar, MapPin, CreditCard, FileText } from 'lucide-react'
 import Link from 'next/link'
 import { DeliveryAgent, deliveryStatus } from '@/components/admin/types'
 import { useParams, useRouter } from 'next/navigation'
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+  CardDescription,
+  CardFooter,
+} from "@/components/ui/card"
 import {
   Select,
   SelectContent,
@@ -39,7 +47,7 @@ const DeliveryAgentDetails: React.FC = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [editedAgent, setEditedAgent] = useState<DeliveryAgent | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const {data :session} =useSession()
+  const {data: session} = useSession()
   const params = useParams();
   const router = useRouter();
   const id = params.id as string;
@@ -47,7 +55,7 @@ const DeliveryAgentDetails: React.FC = () => {
   useEffect(() => {
     const loadAgentDetails = async () => {
       try {
-        const response = await fetch(`/api/agents?id=${id}`,{
+        const response = await fetch(`/api/agents?id=${id}`, {
           headers: {
             Authorization: `Bearer ${session?.user.accessToken}`,
           },
@@ -62,7 +70,7 @@ const DeliveryAgentDetails: React.FC = () => {
     };
 
     loadAgentDetails();
-  }, [id]);
+  }, [id, session]);
 
   const handleEditAgent = async () => {
     if (!editedAgent) return;
@@ -70,9 +78,10 @@ const DeliveryAgentDetails: React.FC = () => {
     try {
       const response = await fetch(`/api/agents?id=${id}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json',
+        headers: { 
+          'Content-Type': 'application/json',
           Authorization: `Bearer ${session?.user.accessToken}`,
-         },
+        },
         body: JSON.stringify(editedAgent),
       });
 
@@ -92,7 +101,7 @@ const DeliveryAgentDetails: React.FC = () => {
         method: 'DELETE',
         headers: {
           Authorization: `Bearer ${session?.user.accessToken}`,
-         },
+        },
       });
 
       if (!response.ok) throw new Error('Failed to delete agent');
@@ -104,41 +113,52 @@ const DeliveryAgentDetails: React.FC = () => {
     }
   };
 
-  if (isLoading) return <div>Loading...</div>;
-  if (!agent) return <div>Agent not found.</div>;
+  if (isLoading) return (
+    <div className="flex justify-center items-center h-screen">
+      <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900"></div>
+    </div>
+  );
+  if (!agent) return <div className="text-center text-red-500">Agent not found.</div>;
 
   return (
-    <div className="container mx-auto p-4">
-      <div className="flex justify-between items-center mb-4">
-        <Link href="/agents" passHref>
-          <Button variant="outline">
-            <ArrowLeftIcon className="mr-2 h-4 w-4" />
-            Back to Delivery Agents
-          </Button>
-        </Link>
-
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline">Options</Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={() => {
-              setIsEditing(true);
-              setEditedAgent(agent);
-            }}>
-              <Edit className="mr-2 h-4 w-4" />
-              Edit Agent
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              className="text-red-600"
-              onClick={() => setIsDeleteDialogOpen(true)}
-            >
-              <Trash2 className="mr-2 h-4 w-4" />
-              Delete Agent
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
+    <div className="container mx-auto p-6 max-w-7xl">
+      <Card className="mb-6">
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-2xl font-bold">Delivery Agent Details</CardTitle>
+          <div className="flex space-x-2">
+            <Link href="/agents" passHref>
+              <Button variant="outline" className="hover:bg-gray-100">
+                <ArrowLeftIcon className="mr-2 h-4 w-4" />
+                Back to Agents
+              </Button>
+            </Link>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" className="hover:bg-gray-100">Actions</Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48">
+                <DropdownMenuItem 
+                  onClick={() => {
+                    setIsEditing(true);
+                    setEditedAgent(agent);
+                  }}
+                  className="cursor-pointer hover:bg-gray-100"
+                >
+                  <Edit className="mr-2 h-4 w-4" />
+                  Edit Agent
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => setIsDeleteDialogOpen(true)}
+                  className="text-red-600 cursor-pointer hover:bg-red-50"
+                >
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Delete Agent
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        </CardHeader>
+      </Card>
 
       <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <DialogContent>
@@ -149,126 +169,184 @@ const DeliveryAgentDetails: React.FC = () => {
             Are you sure you want to delete this agent? This action cannot be undone.
           </DialogDescription>
           <DialogFooter>
-            <Button variant="destructive" onClick={handleDeleteAgent}>
-              Delete
-            </Button>
-            <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)}>
-              Cancel
-            </Button>
+            <Button variant="destructive" onClick={handleDeleteAgent}>Delete</Button>
+            <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)}>Cancel</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
       {isEditing ? (
-        <div className="space-y-4">
-          <h1 className="text-3xl font-bold mb-4">Edit Agent Details</h1>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label>Name</Label>
-              <Input
-                value={editedAgent?.name || ''}
-                onChange={(e) => setEditedAgent(prev => ({ ...prev!, name: e.target.value }))}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>Status</Label>
-              <Select
-                value={editedAgent?.status || ''}
-                onValueChange={(value) => setEditedAgent(prev => ({ ...prev!, status: value as deliveryStatus }))}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="available">Available</SelectItem>
-                  <SelectItem value="on delivery">On Delivery</SelectItem>
-                  <SelectItem value="offline">Offline</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label>Phone Number</Label>
-              <Input
-                value={editedAgent?.phoneNumber || ''}
-                onChange={(e) => setEditedAgent(prev => ({ ...prev!, phoneNumber: e.target.value }))}
-              />
-            </div>
-            <AddressFields
-            address={editedAgent?.address  || {
-              street: '', area: '', city: '', state: '', postalCode: '', country: ''
-            }}
-            onChange={(updatedAddress) => {
-              setEditedAgent(prev => ({
-                ...prev!,
-                address: updatedAddress
-              }));
-            }}
-            isEditing={true}
-          />
-            <div className="space-y-2">
-              <Label>Email</Label>
-              <Input
-                value={editedAgent?.email || ''}
-                onChange={(e) => setEditedAgent(prev => ({ ...prev!, email: e.target.value }))}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>Rating</Label>
-              <Input
-                type="number"
-                step="0.1"
-                min="0"
-                max="5"
-                value={editedAgent?.rating || ''}
-                onChange={(e) => setEditedAgent(prev => ({ ...prev!, rating: parseFloat(e.target.value) }))}
-              />
-            </div>
-          </div>
-
-          <div className="flex gap-2 mt-4">
-            <Button onClick={handleEditAgent}>Save Changes</Button>
-            <Button variant="outline" onClick={() => {
-              setIsEditing(false);
-              setEditedAgent(null);
-            }}>Cancel</Button>
-          </div>
-        </div>
-      ) : (
-        <>
-          <h1 className="text-3xl font-bold mb-4">Delivery Agent Details: {agent.name}</h1>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 ">
-            <div className="bg-white p-4 rounded shadow">
-              <h2 className="text-xl font-semibold mb-2">Agent Information</h2>
-              <p>Name: {agent.name}</p>
-              <p>Phone: {agent.phoneNumber}</p>
-              <p>Email: {agent.email}</p>
-              <p>Aadhar Number: {agent.aadharNumber}</p>
-              <p>License Number: {agent.licenseNumber}</p>
-              <p>Join Date: 
-                 {agent.joinDate ? new Date(agent.joinDate).toLocaleDateString() : 'N/A'}
-              </p>
-              <p>Aadhar Number: {agent.aadharNumber}</p>
-              <p>License Number:{agent.licenseNumber}</p>
+        <Card>
+          <CardHeader>
+            <CardTitle>Edit Agent Details</CardTitle>
+            <CardDescription>Update the information for {agent.name}</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <Label>Name</Label>
+                <Input
+                  value={editedAgent?.name || ''}
+                  onChange={(e) => setEditedAgent(prev => ({ ...prev!, name: e.target.value }))}
+                  className="w-full"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Status</Label>
+                <Select
+                  value={editedAgent?.status || ''}
+                  onValueChange={(value) => setEditedAgent(prev => ({ ...prev!, status: value as deliveryStatus }))}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="available">Available</SelectItem>
+                    <SelectItem value="on delivery">On Delivery</SelectItem>
+                    <SelectItem value="offline">Offline</SelectItem>
+                  </SelectContent>
+                </Select >
+              </div>
+              <div className="space-y-2">
+                <Label>Phone Number</Label>
+                <Input
+                  value={editedAgent?.phoneNumber || ''}
+                  onChange={(e) => setEditedAgent(prev => ({ ...prev!, phoneNumber: e.target.value }))}
+                  className="w-full"
+                />
+              </div>
               <AddressFields
-              address={agent?.address}
-              isEditing={false}
-            />
-              <div className="mt-2">
-                <span>Status:</span>
-                <Badge className="ml-2" variant={agent.status === 'available' ? 'secondary' : 'default'}>
-                  {agent.status}
-                </Badge>
+                address={editedAgent?.address || {
+                  streetAddress: '', landmark: '', city: '', state: '', pincode: '', latitude: '', longitude: ''
+                }}
+                onChange={(updatedAddress) => {
+                  setEditedAgent(prev => ({
+                    ...prev!,
+                    address: updatedAddress
+                  }));
+                }}
+                isEditing={true}
+              />
+              <div className="space-y-2">
+                <Label>Email</Label>
+                <Input
+                  value={editedAgent?.email || ''}
+                  onChange={(e) => setEditedAgent(prev => ({ ...prev!, email: e.target.value }))}
+                  className="w-full"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Rating</Label>
+                <Input
+                  type="number"
+                  step="0.1"
+                  min="0"
+                  max="5"
+                  value={editedAgent?.rating || ''}
+                  onChange={(e) => setEditedAgent(prev => ({ ...prev!, rating: parseFloat(e.target.value) }))}
+                  className="w-full"
+                />
               </div>
             </div>
+            <CardFooter className="flex justify-end gap-2">
+              <Button onClick={handleEditAgent} className="bg-blue-600 hover:bg-blue-700">Save Changes</Button>
+              <Button variant="outline" onClick={() => {
+                setIsEditing(false);
+                setEditedAgent(null);
+              }}>Cancel</Button>
+            </CardFooter>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-2xl flex items-center gap-2">
+                {agent.name}
+                <Badge 
+                  className={`ml-2 ${
+                    agent.status === 'available' 
+                      ? 'bg-green-100 text-green-800' 
+                      : agent.status === 'on delivery'
+                      ? 'bg-blue-100 text-blue-800'
+                      : 'bg-gray-100 text-gray-800'
+                  }`}
+                >
+                  {agent.status}
+                </Badge>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="grid md:grid-cols-2 gap-6">
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold flex items-center gap-2">
+                  <IdCard className="h-5 w-5 text-gray-500" />
+                  Personal Information
+                </h3>
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <Phone className="h-4 w-4 text-gray-500" />
+                    <span>{agent.phoneNumber}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Mail className="h-4 w-4 text-gray-500" />
+                    <span>{agent.email}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Calendar className="h-4 w-4 text-gray-500" />
+                    <span>Joined: {agent.joinDate ? new Date(agent.joinDate).toLocaleDateString() : 'N/A'}</span>
+                  </div>
+                </div>
+              </div>
 
-            <div className="bg-white p-4 rounded shadow">
-              <h2 className="text-xl font-semibold mb-2">Performance</h2>
-              <p>Completed Deliveries:{agent.completedDeliveries}</p>
-              <p>Rating: {Number(agent.rating).toFixed(1)} / 5.0</p>
-            </div>
-          </div>
-        </>
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold flex items-center gap-2">
+                  <Star className="h-5 w-5 text-gray-500" />
+                  Performance Metrics
+                </h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="bg-gray-50 p-4 rounded-lg">
+                    <div className="text-sm text-gray-500">Completed Deliveries</div>
+                    <div className="text-2xl font-bold">{agent.completedDeliveries}</div>
+                  </div>
+                  <div className="bg-gray-50 p-4 rounded-lg">
+                    <div className="text-sm text-gray-500">Rating</div>
+                    <div className="text-2xl font-bold flex items-center gap-2">
+                      {agent.rating} / 5.0
+                      <Star className="h-4 w-4 text-yellow-500" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg font-semibold flex items-center gap-2">
+                <Package className="h-5 w-5 text-gray-500" />
+                Delivery Information
+ </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold flex items-center gap-2">
+                  <CreditCard className="h-5 w-5 text-gray-500" />
+                  Payment Information
+                </h3>
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <FileText className="h-4 w-4 text-gray-500" />
+                    <span>Aadhar Number: {agent.aadharNumber}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <FileText className="h-4 w-4 text-gray-500" />
+                    <span>License Number: {agent.licenseNumber}</span>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       )}
     </div>
   );

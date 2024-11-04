@@ -8,6 +8,7 @@ import AddRestaurantModal from '@/components/AddRestaurantModal'
 import { useData } from '@/contexts/DataContext'
 import { Restaurant } from '@/components/admin/types'
 import { useSession } from 'next-auth/react'
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 
 const RestaurantsContentPage: React.FC = () => {
   const [restaurants, setRestaurants] = useState<Restaurant[]>([])
@@ -76,74 +77,75 @@ const RestaurantsContentPage: React.FC = () => {
     )
   }, [restaurants, searchTerm])
 
-  if (isLoading) return <div>Loading restaurants...</div>
+  if (isLoading) return (
+    <div className="flex justify-center items-center h-screen">
+      <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900"></div>
+    </div>
+  );
   if (error) return <div>Error: {error}</div>
 
   return (
-    <div>
-      <div className="flex justify-between items-center mb-4">
-        <h3 className="text-lg font-semibold"></h3>
+    <Card className="w-full">
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <CardTitle className="text-2xl font-bold">Restaurants</CardTitle>
         <Button onClick={() => setIsAddModalOpen(true)}>
           <PlusIcon className="mr-2 h-4 w-4" />
           Add Restaurant
         </Button>
-      </div>
-      <table className="w-full caption-bottom text-sm">
-        <thead className="border-b">
-          <tr>
-            <th className="h-10 px-2 text-left align-middle font-medium">No.</th>
-            <th className="h-10 px-2 text-left align-middle font-medium">Name</th>
-            <th className="h-10 px-2 text-left align-middle font-medium">Rating</th>
-            <th className="h-10 px-2 text-left align-middle font-medium">Address</th>
-            <th className="h-10 px-2 text-left align-middle font-medium">Phone Number</th>
-            <th className="h-10 px-2 text-left align-middle font-medium">Opening Hours</th>
-            <th className="h-10 px-2 text-left align-middle font-medium">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {filteredRestaurants.map((restaurant, index) => (
-            <tr key={restaurant.id} className="border-b transition-colors hover:bg-muted/50">
-              <td className="p-2">{index + 1}</td>
-              <td className="p-2">{restaurant.name}</td>
-              <td className="p-2">
-  
-              </td>
-              <td className="p-2">
-  {restaurant.address && (
-    <>
-      <div>{restaurant.address.streetAddress}</div>
-      {restaurant.address.landmark && <div>{restaurant.address.landmark}</div>}
-      <div>{restaurant.address.city}</div>
-      <div>{restaurant.address.state}</div>
-      <div>{restaurant.address.pincode}</div>
-      <div>{restaurant.address.latitude}</div>
-      <div>{restaurant.address.longitude}</div>
-    </>
-  )}
-</td>
-              <td className="p-2">{restaurant.phoneNumber}</td>
-              <td className="p-2">{restaurant.openingHours}</td>
-              <td className="p-2">
-                <Link href={`/restaurants/${restaurant.id}`} passHref>
-                  <Button variant="ghost" size="sm">
-                    <EyeIcon className="mr-2 h-4 w-4" />
-                    View
-                  </Button>
-                </Link>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-      {filteredRestaurants.length === 0 && !isLoading && !error && (
-        <p className="text-center mt-4 text-muted-foreground">No restaurants found. Add some restaurants to get started!</p>
-      )}
+      </CardHeader>
+      <CardContent>
+      
+        <div className="overflow-x-auto">
+          <table className="w-full caption-bottom text-sm">
+            <thead className="bg-gray-100">
+              <tr>
+                <th className="h-10 px-4 text-left align-middle font-medium text-gray-500">No.</th>
+                <th className="h-10 px-4 text-left align-middle font-medium text-gray-500">Name</th>
+                <th className="h-10 px-4 text-left align-middle font-medium text-gray-500">Address</th>
+                <th className="h-10 px-4 text-left align-middle font-medium text-gray-500">Phone Number</th>
+                <th className="h-10 px-4 text-left align-middle font-medium text-gray-500">Opening Hours</th>
+                <th className="h-10 px-4 text-left align-middle font-medium text-gray-500">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredRestaurants.map((restaurant, index) => (
+                <tr key={restaurant.id} className="border-b transition-colors hover:bg-gray-50">
+                  <td className="p-4">{index + 1}</td>
+                  <td className="p-4 font-medium">{restaurant.name}</td>
+                  <td className="p-4">
+                    {restaurant.address && (
+                      <>
+                        <div>{restaurant.address.streetAddress}</div>
+                        {restaurant.address.landmark && <div>{restaurant.address.landmark}</div>}
+                        <div>{restaurant.address.city}, {restaurant.address.state} {restaurant.address.pincode}</div>
+                      </>
+                    )}
+                  </td>
+                  <td className="p-4">{restaurant.phoneNumber}</td>
+                  <td className="p-4">{restaurant.openingHours}</td>
+                  <td className="p-4">
+                    <Link href={`/restaurants/${restaurant.id}`} passHref>
+                      <Button variant="outline" size="sm">
+                        <EyeIcon className="mr-2 h-4 w-4" />
+                        View
+                      </Button>
+                    </Link>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        {filteredRestaurants.length === 0 && !isLoading && !error && (
+          <p className="text-center mt-4 text-gray-500">No restaurants found. Add some restaurants to get started!</p>
+        )}
+      </CardContent>
       <AddRestaurantModal
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
         onSubmit={handleAddRestaurant}
       />
-    </div>
+    </Card>
   )
 }
 

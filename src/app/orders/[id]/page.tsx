@@ -30,7 +30,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Order, OrderItem, OrderStatus } from '@/components/admin/types';
-import { AddressFields } from '@/components/AddressFields';
 import { useSession } from 'next-auth/react';
 
 const OrderDetails: React.FC = () => {
@@ -42,19 +41,12 @@ const OrderDetails: React.FC = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [editedOrder, setEditedOrder] = useState<Order | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [newItem, setNewItem] = useState<OrderItem>({
-    id: Date.now().toString(), // Generate a temporary ID
-    name: '',
-    quantity: 1,
-    price: 0,
-    ratings: 0
-  });
-  const {data : session } =useSession()
+  const { data: session, status } = useSession()
 
   const fetchOrderDetails = async (id: string) => {
     try {
-      const response = await fetch(`/api/orders?id=${id}`,{
-        headers:{
+      const response = await fetch(`/api/orders?id=${id}`, {
+        headers: {
           Authorization: `Bearer ${session?.user.accessToken}`,
 
         }
@@ -69,25 +61,56 @@ const OrderDetails: React.FC = () => {
   };
 
   useEffect(() => {
-    fetchOrderDetails(id).then(setOrder);
-  }, [id]);
+
+    if (status === 'authenticated') {
+      fetchOrderDetails(id).then(setOrder);
+
+    }
+  }, [id, session, status]);
+
 
   const handleEditOrder = async () => {
     if (!editedOrder) return;
 
     try {
-      const response = await fetch(`/api/orders?orderId=${id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json',
-          Authorization: `Bearer ${session?.user.accessToken}`,
 
-         },
-        body: JSON.stringify(editedOrder),
-      });
+      const statusChanged = editedOrder.status !== order?.status;
+      const addressChanged =
+        editedOrder.userAddress !== order?.userAddress ||
+        editedOrder.userLatitude !== order?.userLatitude ||
+        editedOrder.userLongitude !== order?.userLongitude;
 
-      if (!response.ok) throw new Error('Failed to update order');
+      if (statusChanged) {
+        const statusResponse = await fetch(`/api/orders?orderId=${id}&updateType=status`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${session?.user.accessToken}`,
+          },
+          body: JSON.stringify({ status: editedOrder.status }),
+        });
 
-      const updatedOrder = await response.json();
+        if (!statusResponse.ok) throw new Error('Failed to update order status');
+      }
+
+      if (addressChanged) {
+        const addressResponse = await fetch(`/api/orders?orderId=${id}&updateType=address`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${session?.user.accessToken}`,
+          },
+          body: JSON.stringify({
+            userAddress: editedOrder.userAddress,
+            userLatitude: editedOrder.userLatitude,
+            userLongitude: editedOrder.userLongitude,
+          }),
+        });
+
+        if (!addressResponse.ok) throw new Error('Failed to update order address');
+      }
+
+      const updatedOrder = await fetchOrderDetails(id);
       setOrder(updatedOrder);
       setIsEditing(false);
     } catch (error) {
@@ -99,7 +122,7 @@ const OrderDetails: React.FC = () => {
     try {
       const response = await fetch(`/api/orders?orderId=${id}`, {
         method: 'DELETE',
-        headers:{
+        headers: {
           Authorization: `Bearer ${session?.user.accessToken}`,
 
         }
@@ -114,59 +137,17 @@ const OrderDetails: React.FC = () => {
     }
   };
 
-  const handleUpdateItem = (itemId: string, field: keyof OrderItem, value: string | number) => {
-    if (!editedOrder) return;
 
-    const updatedItems = editedOrder.items.map(item =>
-      item.id === itemId ? { ...item, [field]: value } : item
-    );
-
-    setEditedOrder({
-      ...editedOrder,
-      items: updatedItems,
-      total: updatedItems.reduce((sum, item) => sum + (item.price * item.quantity), 0)
-    });
-  };
-
-  const handleRemoveItem = (itemId: string) => {
-    if (!editedOrder) return;
-
-    const updatedItems = editedOrder.items.filter(item => item.id !== itemId);
-
-    setEditedOrder({
-      ...editedOrder,
-      items: updatedItems,
-      total: updatedItems.reduce((sum, item) => sum + (item.price * item.quantity), 0)
-    });
-  };
-
-  const handleAddItem = () => {
-    if (!editedOrder || !newItem.name || newItem.quantity <= 0 || newItem.price <= 0) return;
-
-    const updatedItems = [...editedOrder .items, { ...newItem, id: Date.now().toString() }];
-
-    setEditedOrder({
-      ...editedOrder,
-      items: updatedItems,
-      total: updatedItems.reduce((sum, item) => sum + (item.price * item.quantity), 0)
-    });
-
-    // Reset new item form
-    setNewItem({
-      id: Date.now().toString(),
-      name: '',
-      quantity: 1,
-      price: 0,
-      ratings: 0
-    });
-  };
-
-  if (!order) return <div>Loading...</div>;
+  if (!order) return (
+    <div className="flex justify-center items-center h-screen">
+      <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900"></div>
+    </div>
+  );
 
   return (
-    <div className="container mx-auto p-4">
-      <div className="flex justify-between items-center mb-4">
-        <Link href="/orders" passHref>
+    <div className="container mx-auto p-6 max-w-4xl bg-white shadow rounded-lg space-y-6">
+    <div className="flex flex-row justify-between items-center pb-4 border-b">
+      <Link href="/orders" passHref>
           <Button variant="outline">
             <ArrowLeftIcon className="mr-2 h-4 w-4" />
             Back to Orders
@@ -222,14 +203,8 @@ const OrderDetails: React.FC = () => {
               <Label>Customer Name</Label>
               <Input
                 value={editedOrder?.customerName || ''}
-                onChange={(e) => setEditedOrder(prev => ({ ...prev!, customerName: e.target.value }))}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>Restaurant Name</Label>
-              <Input
-                value={editedOrder?.restaurantName || ''}
-                onChange={(e) => setEditedOrder(prev => ({ ...prev!, restaurantName: e.target.value }))}
+                disabled // Disable customer name editing
+                className="bg-gray-100" // Add visual indication that it's disabled
               />
             </div>
             <div className="space-y-2">
@@ -251,20 +226,35 @@ const OrderDetails: React.FC = () => {
                 </SelectContent>
               </Select>
             </div>
-            <AddressFields
-              address={editedOrder?.deliveryAddress || {
-                street: '', area: '', city: '', state: '', postalCode: '', country: ''
-              }}
-              onChange={(updatedAddress) => {
-                setEditedOrder(prev => ({ ...prev!, deliveryAddress: updatedAddress }));
-              }}
-              isEditing={true}
-            />
+            <div className="space-y-2">
+              <Label>User Address</Label>
+              <Input
+                value={editedOrder?.userAddress || ''}
+                onChange={(e) => setEditedOrder(prev => ({ ...prev!, userAddress: e.target.value }))}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Latitude</Label>
+              <Input
+                type="number"
+                value={editedOrder?.userLatitude || ''}
+                onChange={(e) => setEditedOrder(prev => ({ ...prev!, userLatitude: parseFloat(e.target.value) }))}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Longitude</Label>
+              <Input
+                type="number"
+                value={editedOrder?.userLongitude || ''}
+                onChange={(e) => setEditedOrder(prev => ({ ...prev!, userLongitude: parseFloat(e.target.value) }))}
+              />
+            </div>
             <div className="space-y-2">
               <Label>Payment Method</Label>
               <Input
                 value={editedOrder?.paymentMethod || ''}
-                onChange={(e) => setEditedOrder(prev => ({ ...prev!, paymentMethod: e.target.value }))}
+                disabled
+                className="bg-gray-100"
               />
             </div>
           </div>
@@ -279,9 +269,11 @@ const OrderDetails: React.FC = () => {
                 <tr>
                   <th className="text-left">Item</th>
                   <th className="text-left">Quantity</th>
+                  <th className="text-left">Description</th>
                   <th className="text-left">Price</th>
+                  <th className="text-left">Discount</th>
+                  <th className="text-left">Image</th>
                   <th className="text-left">Subtotal</th>
-                  <th className="text-left">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -289,75 +281,57 @@ const OrderDetails: React.FC = () => {
                   <tr key={item.id}>
                     <td>
                       <Input
-                        value={item.name}
-                        onChange={(e) => handleUpdateItem(item.id, 'name', e.target.value)}
+                        value={item.name || ''}
+                        disabled
+                        className="bg-gray-100"
                       />
                     </td>
                     <td>
                       <Input
                         type="number"
-                        value={item.quantity}
-                        onChange={(e) => handleUpdateItem(item.id, 'quantity', parseInt(e.target.value))}
+                        value={item.quantity || ''}
+                        disabled
+                        className="bg-gray-100"
+                      />
+                    </td>
+                    <td>
+                      <Input
+                        value={item.description || ''}
+                        disabled
+                        className="bg-gray-100"
                       />
                     </td>
                     <td>
                       <Input
                         type="number"
-                        value={item.price}
-                        onChange={(e) => handleUpdateItem(item.id, 'price', parseFloat(e.target.value))}
+                        value={item.price || ''}
+                        disabled
+                        className="bg-gray-100"
+                      />
+                    </td>
+                    <td>
+                      <Input
+                        type="number"
+                        value={item.discount || ''}
+                        disabled
+                        className="bg-gray-100"
+                      />
+                    </td>
+                    <td>
+                      <Input
+                        value={item.imageLink || ''}
+                        disabled
+                        className="bg-gray-100"
                       />
                     </td>
                     <td>${(item.quantity * item.price).toFixed(2)}</td>
-                    <td>
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        onClick={() => handleRemoveItem(item.id)}
-                      >
-                        <X className="h-4 w-4" />
-                      </Button>
-                    </td>
                   </tr>
                 ))}
-                {/* New Item Row */}
-                <tr>
-                  <td>
-                    <Input
-                      placeholder="Item name"
-                      value={newItem.name || ''}
-                      onChange={(e) => setNewItem(prev => ({ ...prev, name: e.target.value }))}
-                    />
-                  </td>
-                  <td>
-                    <Input
-                      type="number"
-                      value={newItem.quantity || ''}
-                      onChange={(e) => setNewItem(prev => ({ ...prev, quantity: parseInt(e.target.value) }))}
-                    />
-                  </td>
-                  <td>
-                    <Input
-                      type="number"
-                      value={newItem.price || ''}
-                      onChange={(e) => setNewItem(prev => ({ ...prev, price: parseFloat(e.target.value) }))}
-                    />
-                  </td>
-                  <td>${(newItem.quantity * newItem.price).toFixed(2)}</td>
-                  <td>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={handleAddItem}
-                    >
-                      <Plus className="h-4 w-4" />
-                    </Button>
-                  </td>
-                </tr>
               </tbody>
               <tfoot>
                 <tr>
-                  <td colSpan={3} className="text-right font-bold">Total:</td>
-                  <td className="font-bold" colSpan={2}>
+                  <td colSpan={6} className="text-right font-bold">Total:</td>
+                  <td className="font-bold">
                     ${Number(editedOrder?.total).toFixed(2)}
                   </td>
                 </tr>
@@ -374,40 +348,46 @@ const OrderDetails: React.FC = () => {
           </div>
         </div>
       ) : (
-        <div className="space-y-4">
-          <h2 className="text-3xl font-bold mb-4">Order Details:</h2>
+        <div className="space-y-4 ">
+          <h2 className="text-3xl font-bold mb-4 ">Order Details:</h2>
           < div className="grid grid-cols-1 md:grid-cols-2 ">
             <div className="space-y-2">
               <Label>Customer Name:</Label>
               <Badge variant="outline">{order?.customerName}</Badge>
             </div>
             <div className="space-y-2">
-              <Label>Restaurant Name:</Label>
-              <Badge variant="outline">{order?.restaurantName}</Badge>
-            </div>
-            <div className="space-y-2">
               <Label>Status:</Label>
               <Badge variant="outline">{order?.status}</Badge>
             </div>
-           
+
             <div className="space-y-2">
               <Label>Payment Method:</Label>
               <Badge variant="outline">{order?.paymentMethod}</Badge>
             </div>
           </div>
-
-          <AddressFields
-              address={order.deliveryAddress}
-              isEditing={false}
-            />
-          <div className="space-y-4">
+          <div className="space-y-2">
+            <Label>User Address:</Label>
+            <Badge variant="outline">{order?.userAddress}</Badge>
+          </div>
+          <div className="space-y-2">
+            <Label>Latitude:</Label>
+            <Badge variant="outline">{order?.userLatitude}</Badge>
+          </div>
+          <div className="space-y-2">
+            <Label>Longitude:</Label>
+            <Badge variant="outline">{order?.userLongitude}</Badge>
+          </div>
+          <div className="space-y-4 bg-white p-4 rounded shadow mt-6">
             <h3 className="font-medium">Order Items:</h3>
             <table className="w-full">
               <thead>
                 <tr>
                   <th className="text-left">Item</th>
                   <th className="text-left">Quantity</th>
+                  <th className="text-left">Description</th>
                   <th className="text-left">Price</th>
+                  <th className="text-left">Discount</th>
+                  <th className="text-left">Image</th>
                   <th className="text-left">Subtotal</th>
                 </tr>
               </thead>
@@ -416,22 +396,32 @@ const OrderDetails: React.FC = () => {
                   <tr key={item.id}>
                     <td>{item.name}</td>
                     <td>{item.quantity}</td>
+                    <td>{item.description}</td>
                     <td>${item.price.toFixed(2)}</td>
+                    <td>{item.discount ? `${item.discount}%` : 'N/A'}</td>
+                    <td>
+                      {item.imageLink ? (
+                        <img src={item.imageLink} alt={item.name} className="w-16 h-16 object-cover" />
+                      ) : (
+                        'No Image'
+                      )}
+                    </td>
                     <td>${(item.quantity * item.price).toFixed(2)}</td>
                   </tr>
                 ))}
               </tbody>
               <tfoot>
                 <tr>
-                  <td colSpan={3} className="text-right font-bold">Total:</td>
-                  <td className="font-bold" colSpan={2}>
-                    ${Number(order?.total).toFixed(2)}
-                  </td>
+                  <td colSpan={6} className="text-right font-bold">Total:</td>
+                  <td className="font-bold">${Number(order?.total).toFixed(2)}</td>
                 </tr>
               </tfoot>
             </table>
+
           </div>
+         
         </div>
+        
       )}
     </div>
   );

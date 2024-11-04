@@ -39,12 +39,13 @@ const AddAgentModal: React.FC<AddAgentModalProps> = ({ isOpen, onClose, onSubmit
     joinDate: new Date(),
     rating: 0,
     address: {
-        street: '',
-        area: '',
-        city: '',
-        state: '',
-        postalCode: '',
-        country: ''
+      landmark: '',
+      city: '',
+      state: '',
+      pincode: '',
+      latitude:'',
+      longitude:'',
+      streetAddress:''
       },
     aadharNumber:'',
     licenseNumber:''
@@ -97,12 +98,13 @@ const AddAgentModal: React.FC<AddAgentModalProps> = ({ isOpen, onClose, onSubmit
         joinDate: new Date(),
         rating: 0,
         address: {
-            street: '',
-            area: '',
+            landmark: '',
             city: '',
             state: '',
-            postalCode: '',
-            country: ''
+            pincode: '',
+            latitude:'',
+            longitude:'',
+            streetAddress:''
           },
         aadharNumber:'',
         licenseNumber:''

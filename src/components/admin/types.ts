@@ -20,18 +20,23 @@ export interface OrderItem {
   quantity: number;
   price: number;
   ratings: number;
+  discount: number;
+  description: string; 
+  imageLink: string; 
 }
 
 export interface Order {
   id: string;
   customerName: string;
-  restaurantName: string;
+  restaurantId: string; // Changed from restaurantName
   status: OrderStatus;
   total: number;
   date: Date;
-  items: OrderItem[];
-  deliveryAddress: Address; 
+  userAddress: string; // Changed from deliveryAddress
+  userLatitude: number; // Added
+  userLongitude: number; // Added
   paymentMethod: string;
+  items: OrderItem[];
 }
 
 export interface Restaurant {

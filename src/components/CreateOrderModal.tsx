@@ -4,9 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { Address, Order, OrderItem, OrderStatus, Restaurant } from './admin/types';
-import { AddressFields } from './AddressFields';
-
+import { Order, OrderItem, OrderStatus, Restaurant } from './admin/types';
 
 interface CreateOrderModalProps {
   isOpen: boolean;
@@ -23,19 +21,14 @@ const CreateOrderModal: React.FC<CreateOrderModalProps> = ({
 }) => {
   const initialOrderData: Partial<Order> = {
     customerName: '',
-    restaurantName: '',
+    restaurantId: '', // Changed from restaurantName
     status: 'pending',
     total: 0,
     date: new Date(),
     items: [],
-    deliveryAddress: {
-      street: '',
-      area: '',
-      city: '',
-      state: '',
-      postalCode: '',
-      country: ''
-    } as Address,
+    userAddress: '', // Changed from deliveryAddress
+    userLatitude: 0, // Added
+    userLongitude: 0, // Added
     paymentMethod: ''
   };
 
@@ -44,7 +37,10 @@ const CreateOrderModal: React.FC<CreateOrderModalProps> = ({
     name: '',
     quantity: 1,
     price: 0,
-    ratings: 0
+    ratings: 0,
+    discount: 0, // Added
+    description: '', // Added
+    imageLink: '' // Added
   });
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -73,14 +69,20 @@ const CreateOrderModal: React.FC<CreateOrderModalProps> = ({
           name: currentItem.name!,
           quantity: currentItem.quantity || 1,
           price: currentItem.price || 0,
-          ratings: currentItem.ratings || 0
+          ratings: currentItem.ratings || 0,
+          discount: currentItem.discount || 0,
+          description: currentItem.description || '',
+          imageLink: currentItem.imageLink || ''
         }]
       }));
       setCurrentItem({
         name: '',
         quantity: 1,
         price: 0,
-        ratings: 0
+        ratings: 0,
+        discount: 0,
+        description: '',
+        imageLink: ''
       });
     }
   };
@@ -106,7 +108,7 @@ const CreateOrderModal: React.FC<CreateOrderModalProps> = ({
               <Input 
                 id="customerName"
                 placeholder="Customer Name" 
-                value={orderData.customerName ?? ''} 
+                value={orderData.customerName || ''} 
                 onChange={(e) => setOrderData({...orderData, customerName: e.target.value})}
                 required
               />
@@ -116,15 +118,12 @@ const CreateOrderModal: React.FC<CreateOrderModalProps> = ({
             <div className="space-y-2">
               <Label>Restaurant</Label>
               <Select 
-                value={orderData.restaurantName ?? ''}
+                value={orderData.restaurantId || ''}
                 onValueChange={(value) => {
-                  const selectedRestaurant = restaurants.find(r => r.id === value);
-                  if (selectedRestaurant) {
-                    setOrderData({
-                      ...orderData, 
-                      restaurantName: value
-                    });
-                  }
+                  setOrderData({
+                    ...orderData, 
+                    restaurantId: value
+                  });
                 }}
               >
                 <SelectTrigger>
@@ -140,17 +139,43 @@ const CreateOrderModal: React.FC<CreateOrderModalProps> = ({
               </Select>
             </div>
 
-            {/* Delivery Address */}
-            <div className="col-span-2 space-y-2">
-              <h3 className="font-medium">Delivery Address</h3>
-             <AddressFields
-                address={orderData.deliveryAddress || {
-                  street: '', area: '', city: '', state: '', postalCode: '', country: ''
-                }}
-                onChange={(updatedAddress) => {
-                  setOrderData(prev => ({ ...prev, deliveryAddress: updatedAddress }));
-                }}
-                isEditing={true}
+            {/* User Address */}
+            <div className="space-y-2">
+              <Label>User Address</Label>
+              <Input 
+                placeholder="Address"
+                value={orderData.userAddress || ''} 
+                onChange={(e) => setOrderData({...orderData, userAddress: e.target.value})}
+                required
+              />
+            </div>
+
+            {/* Latitude and Longitude */}
+            <div className="space-y-2">
+              <Label>Latitude</Label>
+              <Input 
+                type="number"
+                placeholder="Latitude"
+                value={orderData.userLatitude || ''} 
+                onChange={(e) => setOrderData({
+                  ...orderData, 
+                  userLatitude: parseFloat(e.target.value)
+                })}
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label>Longitude</Label>
+              <Input 
+                type="number"
+                placeholder="Longitude"
+                value={orderData.userLongitude || ''} 
+                onChange={(e) => setOrderData({
+                  ...orderData, 
+                  userLongitude: parseFloat(e.target.value)
+                })}
+                required
               />
             </div>
 
@@ -158,7 +183,7 @@ const CreateOrderModal: React.FC<CreateOrderModalProps> = ({
             <div className="space-y-2">
               <Label>Payment Method</Label>
               <Select 
-                value={orderData.paymentMethod ?? ''}
+                value={orderData.paymentMethod || ''}
                 onValueChange={(value) => setOrderData({...orderData, paymentMethod: value})}
               >
                 <SelectTrigger>
@@ -178,11 +203,16 @@ const CreateOrderModal: React.FC<CreateOrderModalProps> = ({
             <h3 className="font-medium">Order Items</h3>
             
             {/* Add Item Form */}
-            <div className="grid grid-cols-4 gap-2">
+            <div className="grid grid-cols-2 gap-2">
               <Input 
                 placeholder="Item Name"
                 value={currentItem.name || ''}
                 onChange={(e) => setCurrentItem({...currentItem, name: e.target.value})}
+              />
+              <Input 
+                placeholder="Description"
+                value={currentItem.description || ''}
+                onChange={(e) => setCurrentItem({...currentItem, description: e.target.value})}
               />
               <Input 
                 type="number"
@@ -190,7 +220,7 @@ const CreateOrderModal: React.FC<CreateOrderModalProps> = ({
                 value={currentItem.quantity || ''}
                 onChange={(e) => setCurrentItem({
                   ...currentItem, 
-                  quantity: parseInt(e.target.value) || 1 // Ensure valid number
+                  quantity: parseInt(e.target.value)
                 })}
                 min="1"
               />
@@ -200,10 +230,26 @@ const CreateOrderModal: React.FC<CreateOrderModalProps> = ({
                 value={currentItem.price || ''}
                 onChange={(e) => setCurrentItem({
                   ...currentItem, 
-                  price: parseFloat(e.target.value) || 0 // Ensure valid number
+                  price: parseFloat(e.target.value) || 0
+                })}
+                min="0"
+                step=" 0.01"
+              />
+              <Input 
+                type="number"
+                placeholder="Discount"
+                value={currentItem.discount || ''}
+                onChange={(e) => setCurrentItem({
+                  ...currentItem, 
+                  discount: parseFloat(e.target.value) || 0
                 })}
                 min="0"
                 step="0.01"
+              />
+              <Input 
+                placeholder="Image Link"
+                value={currentItem.imageLink || ''}
+                onChange={(e) => setCurrentItem({...currentItem, imageLink: e.target.value})}
               />
               <Button 
                 type="button" 
@@ -246,13 +292,7 @@ const CreateOrderModal: React.FC<CreateOrderModalProps> = ({
             type="submit" 
             className="w-full"
             disabled={!orderData.customerName || 
-                     !orderData.restaurantName || 
-                     !orderData.deliveryAddress?.street || 
-                     !orderData.deliveryAddress?.area || 
-                     !orderData.deliveryAddress?.city || 
-                     !orderData.deliveryAddress?.state || 
-                     !orderData.deliveryAddress?.postalCode || 
-                     !orderData.deliveryAddress?.country || 
+                     !orderData.userAddress || 
                      !orderData.paymentMethod || 
                      orderData.items?.length === 0}
           >

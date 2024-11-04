@@ -2,14 +2,16 @@
 import React, { useState, useEffect } from 'react'
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { format } from 'date-fns'
-import { EyeIcon, ChevronDownIcon, PlusIcon } from 'lucide-react'
+import { EyeIcon, ChevronDownIcon, PlusIcon, SearchIcon } from 'lucide-react'
 import Link from 'next/link'
 import { useData } from '@/contexts/DataContext'
 import { useToast } from '@/hooks/use-toast'
 import CreateOrderModal from '@/components/CreateOrderModal'
 import { Order, Restaurant } from '@/components/admin/types'
 import { useSession } from 'next-auth/react'
+import { format } from 'date-fns';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
 
 const OrdersContentPage: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState('all')
@@ -19,7 +21,7 @@ const OrdersContentPage: React.FC = () => {
   const [restaurants, setRestaurants] = useState<Restaurant[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const {toast} = useToast()
-  const {data : session} = useSession()
+  const {data : session,status} = useSession()
   const fetchRestaurants = async () => {
     setIsLoading(true)
     try {
@@ -62,9 +64,11 @@ const OrdersContentPage: React.FC = () => {
     }
   }
   useEffect(() => {
-    fetchRestaurants()
-    fetchOrders()
-  }, [])
+    if (status === 'authenticated') {
+      fetchRestaurants()
+      fetchOrders()
+    }
+  }, [status,session])
   const handleStatusFilter = (event: React.ChangeEvent<HTMLSelectElement>) => {
     setStatusFilter(event.target.value)
   }
@@ -107,92 +111,98 @@ const OrdersContentPage: React.FC = () => {
   }
   const filteredOrders = orders?.filter(order => 
     (order.customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-     order.restaurantName.toLowerCase().includes(searchTerm.toLowerCase()) ||
      order.id.toLowerCase().includes(searchTerm.toLowerCase())) &&
     (statusFilter === 'all' || order.status === statusFilter)
   )
   if(isLoading){
-    return <div>Loading...</div>
-  }
-  return (
-    <div className="space-y-4">
-      <div className="flex justify-between items-center">
-        <h3 className="text-2xl font-semibold">Orders</h3>
-        <Button onClick={() => setIsModalOpen(true)}>          <PlusIcon className="mr-2 h-4 w-4" />
-          Add Order
-        </Button>
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900"></div>
       </div>
-        <CreateOrderModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onSubmit={handleCreateOrder}
-        restaurants={restaurants}
-      />
+    );
+  }
 
-   
-      <div className="flex justify-end">
-        <div className="relative inline-block w-48">
-          <select
-            value={statusFilter}
-            onChange={handleStatusFilter}
-            className="block appearance-none w-full bg-white border border-gray-300 hover:border-gray-400 px-4 py-2 pr-8 rounded shadow leading-tight focus:outline-none focus:shadow-outline"
-          >
-            <option value="all">All Statuses</option>
-            < option value="pending">Pending</option>
-            <option value="preparing">Preparing</option>
-            <option value="on the way">On the Way</option>
-            <option value="delivered">Delivered</option>
-          </select>
-          <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
-            <ChevronDownIcon className="h-4 w-4" />
+  return (
+    <Card className="w-full">
+      <CardHeader>
+        <div className="flex justify-between items-center">
+          <CardTitle className="text-2xl font-bold">Orders</CardTitle>
+          <Button onClick={() => setIsModalOpen(true)}>
+            <PlusIcon className="mr-2 h-4 w-4" />
+            Add Order
+          </Button>
+        </div>
+      </CardHeader>
+      <CardContent>
+        <CreateOrderModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          onSubmit={handleCreateOrder}
+          restaurants={restaurants}
+        />
+
+        <div className="flex justify-between items-center mb-6">
+          <div className="relative inline-block w-48">
+            <select
+              value={statusFilter}
+              onChange={handleStatusFilter}
+              className="block appearance-none w-full bg-white border border-gray-300 hover:border-gray-400 px-4 py-2 pr-8 rounded shadow leading-tight focus:outline-none focus:shadow-outline"
+            >
+              <option value="all">All Statuses</option>
+              <option value="pending">Pending</option>
+              <option value="preparing">Preparing</option>
+              <option value="on the way">On the Way</option>
+              <option value="delivered">Delivered</option>
+            </select>
+            <ChevronDownIcon className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700" />
           </div>
         </div>
-      </div>
 
-      <table className="w-full caption-bottom text-sm">
-        <thead className="border-b">
-          <tr>
-            <th className="h-10 px-2 text-left align-middle font-medium">No.</th>
-            <th className="h-10 px-2 text-left align-middle font-medium">Customer</th>
-            <th className="h-10 px-2 text-left align-middle font-medium">Restaurant</th>
-            <th className="h-10 px-2 text-left align-middle font-medium">Total</th>
-            <th className="h-10 px-2 text-left align-middle font-medium">Status</th>
-            <th className="h-10 px-2 text-left align-middle font-medium">Date</th>
-            <th className="h-10 px-2 text-left align-middle font-medium">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {filteredOrders.map((order,index) => (
-            <tr key={order.id} className="border-b transition-colors hover:bg-muted/50">
-              <td className="p-2 font-medium">{index+1}</td>
-              <td className="p-2">{order.customerName}</td>
-              <td className="p-2">{order.restaurantName}</td>
-              <td className="p-2">${Number(order.total).toFixed(2)}</td>
-              <td className="p-2">
-                <Badge variant={getStatusColor(order.status)}>
-                  {order.status}
-                </Badge>
-              </td>
-              <td className="p-2">{format(order.date, 'PPp')}</td>
-              <td className="p-2">
-                <Link href={`/orders/${order.id}`} passHref>
-                  <Button variant="ghost" size="sm">
-                    <EyeIcon className="mr-2 h-4 w-4" />
-                    View
-                  </Button>
-                </Link>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-
-      {filteredOrders.length === 0 && (
-        <div className="text-center py-4 text-gray-500">
-          No orders found matching your criteria.
+        <div className="overflow-x-auto">
+          <table className="w-full caption-bottom text-sm">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No.</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {filteredOrders.map((order, index) => (
+                <tr key={order.id} className="hover:bg-gray-50">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{index+1}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{order.customerName}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${Number(order.total).toFixed(2)}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <Badge variant={getStatusColor(order.status)}>
+                      {order.status}
+                    </Badge>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{format(order.date, 'PPp')}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                    <Link href={`/orders/${order.id}`} passHref>
+                      <Button variant="ghost" size="sm">
+                        <EyeIcon className="mr-2 h-4 w-4" />
+                        View
+                      </Button>
+                    </Link>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
-      )}
-    </div>
+
+        {filteredOrders.length === 0 && (
+          <div className="text-center py-4 text-gray-500">
+            No orders found matching your criteria.
+          </div>
+        )}
+      </CardContent>
+    </Card>
   )
 }
 

@@ -1,4 +1,3 @@
-// src/app/page.tsx
 'use client';
 import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
@@ -24,6 +23,7 @@ import {
 import { MenuItem, Restaurant } from '@/components/admin/types';
 import { AddressFields } from '@/components/AddressFields';
 import { useSession } from 'next-auth/react';
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 
 const RestaurantDetails: React.FC = () => {
   const params = useParams();
@@ -38,7 +38,8 @@ const RestaurantDetails: React.FC = () => {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [deleteType, setDeleteType] = useState<'restaurant' | 'menuItem'>('restaurant');
   const [menuItemToDelete, setMenuItemToDelete] = useState<string | null>(null);
-  const { data: session } = useSession()
+  const { data: session } = useSession();
+
   const fetchRestaurantDetails = async (id: string): Promise<Restaurant> => {
     const response = await fetch(`/api/restaurants/${id}`, {
       headers: {
@@ -82,7 +83,6 @@ const RestaurantDetails: React.FC = () => {
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${session?.user.accessToken}`,
-
         },
         body: JSON.stringify(editedRestaurant),
       });
@@ -105,6 +105,7 @@ const RestaurantDetails: React.FC = () => {
     }
     setIsDeleteDialogOpen(false);
   };
+
   const openDeleteDialog = (type: 'restaurant' | 'menuItem', itemId?: string) => {
     setDeleteType(type);
     if (itemId) setMenuItemToDelete(itemId);
@@ -135,7 +136,6 @@ const RestaurantDetails: React.FC = () => {
           headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${session?.user.accessToken}`,
-
           },
           body: JSON.stringify(newItem),
         });
@@ -177,7 +177,6 @@ const RestaurantDetails: React.FC = () => {
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${session?.user.accessToken}`,
-
         },
         body: JSON.stringify(itemToUpdate),
       });
@@ -200,7 +199,6 @@ const RestaurantDetails: React.FC = () => {
         method: 'DELETE',
         headers: {
           Authorization: `Bearer ${session?.user.accessToken}`,
-
         }
       });
       if (!response.ok) throw new Error('Failed to delete menu item');
@@ -216,7 +214,11 @@ const RestaurantDetails: React.FC = () => {
     setEditingItemId(null);
   };
 
-  if (!restaurant) return <div>Loading...</div>;
+  if (!restaurant) return (
+    <div className="flex justify-center items-center h-screen">
+      <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900"></div>
+    </div>
+  );
 
   return (
     <div className="container mx-auto p-4">
@@ -230,7 +232,7 @@ const RestaurantDetails: React.FC = () => {
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="flex items-center justify-center h-10 px-4 text-gray-700 bg-white rounded-md shadow-sm hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition duration-150 ease-in-out font-bold">
+            <Button variant="ghost" className="flex items-center justify-center h-10 px-4 text-gray-700 bg-white rounded-md shadow-sm hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus: ring-offset-2 transition duration-150 ease-in-out font-bold">
               Options
             </Button>
           </DropdownMenuTrigger>
@@ -324,14 +326,19 @@ const RestaurantDetails: React.FC = () => {
         </div>
       ) : (
         <div className="mb-4">
-
-          <AddressFields
-            address={restaurant.address}
-            isEditing={false}
-          />
-
-          <p>Phone: {restaurant.phoneNumber}</p>
-          <p>Opening Hours: {restaurant.openingHours}</p>
+          <Card>
+            <CardHeader>
+              <CardTitle>Restaurant Details</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <AddressFields
+                address={restaurant.address}
+                isEditing={false}
+              />
+              <p>Phone: {restaurant.phoneNumber}</p>
+              <p>Opening Hours: {restaurant.openingHours}</p>
+            </CardContent>
+          </Card>
         </div>
       )}
 
@@ -393,9 +400,22 @@ const RestaurantDetails: React.FC = () => {
                         onChange={(e) => handleEditChange(item.id, 'imageLink', e.target.value)}
                       />
                     </td>
-                    <td className="py-2">
-                      <Button onClick={handleSaveEdit} className="mr-2"><Save className="h-4 w-4" /></Button>
-                      <Button onClick={handleCancelEdit} variant="destructive"><X className="h-4 w-4" /></Button>
+                    <td className="py-2 px-2">
+                      <Button
+                        onClick={handleSaveEdit}
+                        className=" text-white rounded-md shadow-sm transition duration-200 flex items-center justify-center w-full"
+                      >
+                        <Save className="h-4 w-4 mr-1" />
+                      </Button>
+                    </td>
+                    <td className="py-2 px-2">
+                      <Button
+                        onClick={handleCancelEdit}
+                        variant="destructive"
+                        className="bg-red-500 hover:bg-red-600 text-white rounded-md shadow-sm transition duration-200 flex items-center justify-center w-full"
+                      >
+                        <X className="h-4 w-4 mr-1" />
+                      </Button>
                     </td>
                   </>
                 ) : (
@@ -417,7 +437,8 @@ const RestaurantDetails: React.FC = () => {
                         variant="destructive"
                       >
                         <X className="h-4 w-4" />
-                      </Button>                    </ td>
+                      </Button>
+                    </td>
                   </>
                 )}
               </tr>
@@ -453,7 +474,7 @@ const RestaurantDetails: React.FC = () => {
               <Input id="imageLink" value={newItem.imageLink || ''} onChange={(e) => setNewItem({ ...newItem, imageLink: e.target.value })} />
             </div>
             <div className="flex items-end">
-              <Button onClick={handleAddItem}><Plus className="h-4 w-4 mr -2" /> Add Item</Button>
+              <Button onClick={handleAddItem}><Plus className="h-4 w-4 mr -2" /> Add Item</Button >
             </div>
           </div>
         </div>
