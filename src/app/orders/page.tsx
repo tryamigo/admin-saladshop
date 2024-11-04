@@ -121,7 +121,7 @@ const OrdersContentPage: React.FC = () => {
       </div>
     );
   }
-
+  console.log(orders)
   return (
     <Card className="w-full">
       <CardHeader>

@@ -1,4 +1,3 @@
-// app/api/orders/route.ts
 import { handleRequest } from "@/components/helper";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -6,10 +5,14 @@ export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
     const id = searchParams.get('id');
+    const mobile = searchParams.get('mobile'); // Add this line to retrieve mobile parameter
 
     if (id) {
-      // Get specific order
+      // Get specific order by ID
       return await handleRequest(req, 'GET', `/orders/${id}`);
+    } else if (mobile) {
+      // Get all orders by mobile number
+      return await handleRequest(req, 'GET', `/orders/mobile/${mobile}`);
     } else {
       // Get all orders
       return await handleRequest(req, 'GET', '/orders');
@@ -23,9 +26,8 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-      // Create new order
-      return await handleRequest(req, 'POST', '/orders', body);
-
+    // Create new order
+    return await handleRequest(req, 'POST', '/orders', body);
   } catch (error) {
     console.error('Error with order operation:', error);
     return NextResponse.json({ error: 'Failed to process order' }, { status: 500 });
@@ -55,7 +57,6 @@ export async function PUT(req: NextRequest) {
       default:
         return NextResponse.json({ error: 'Invalid update type' }, { status: 400 });
     }
-    
   } catch (error) {
     console.error('Error updating order:', error);
     return NextResponse.json({ error: 'Failed to update order' }, { status: 500 });
@@ -70,8 +71,7 @@ export async function DELETE(req: NextRequest) {
     if (!orderId) {
       return NextResponse.json({ error: 'Order ID is required' }, { status: 400 });
     }
-      return await handleRequest(req, 'DELETE', `/orders/${orderId}`);
-    
+    return await handleRequest(req, 'DELETE', `/orders/${orderId}`);
   } catch (error) {
     console.error('Error deleting order:', error);
     return NextResponse.json({ error: 'Failed to delete order' }, { status: 500 });

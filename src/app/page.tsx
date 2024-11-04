@@ -25,8 +25,7 @@ const DashboardContentPage: React.FC = () => {
         agent.name.toLowerCase().includes(lowerSearchTerm)
       ),
       users: users?.filter(user => 
-        user.name.toLowerCase().includes(lowerSearchTerm) ||
-        user.email.toLowerCase().includes(lowerSearchTerm)
+        user.mobile.includes(searchTerm)
       )
     }
   }, [orders, restaurants, deliveryAgents, users, searchTerm])

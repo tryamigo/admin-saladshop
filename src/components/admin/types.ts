@@ -31,6 +31,7 @@ export interface Order {
   restaurantId: string; // Changed from restaurantName
   status: OrderStatus;
   total: number;
+  mobile:string; 
   date: Date;
   userAddress: string; // Changed from deliveryAddress
   userLatitude: number; // Added
@@ -79,15 +80,5 @@ export interface DeliveryAgent {
 
 export interface User {
   id: string;
-  name: string;
-  email: string;
-  registrationDate: Date;
-  phoneNumber: string;
-  address: Address; 
-  orderHistory: {
-    id: string;
-    date: Date;
-    total: number;
-    status: string;
-  }[];
+  mobile: string;
 }

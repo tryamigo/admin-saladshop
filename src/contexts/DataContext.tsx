@@ -29,6 +29,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         await fetchRestaurants()
         await fetchOrders()
         await fetchDeliveryAgents()
+        await fetchUsers()
       } catch (error) {
         console.error('Error fetching data:', error)
       }
@@ -87,7 +88,22 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       console.error('Error fetching delivery agents:', error);
     }
   };
-  
+  const fetchUsers = async () => {
+    try {
+      const response = await fetch('/api/users', {
+        headers: {
+          Authorization: `Bearer ${session?.user.accessToken}`,
+        },
+      })
+      if (!response.ok) {
+        throw new Error('Failed to fetch users')
+      }
+      const data = await response.json()
+      setUsers(data)
+    } catch (error) {
+      console.error('Error fetching users:', error)
+    }
+  }
   useEffect(() => {
     fetchData()
   }, [status, session])

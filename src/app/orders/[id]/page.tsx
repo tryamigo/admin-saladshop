@@ -117,14 +117,13 @@ const OrderDetails: React.FC = () => {
       console.error('Error updating order:', error);
     }
   };
-
+  console.log('orders are',order);
   const handleDeleteOrder = async () => {
     try {
       const response = await fetch(`/api/orders?orderId=${id}`, {
         method: 'DELETE',
         headers: {
           Authorization: `Bearer ${session?.user.accessToken}`,
-
         }
       });
 

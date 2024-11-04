@@ -29,7 +29,8 @@ const CreateOrderModal: React.FC<CreateOrderModalProps> = ({
     userAddress: '', // Changed from deliveryAddress
     userLatitude: 0, // Added
     userLongitude: 0, // Added
-    paymentMethod: ''
+    paymentMethod: '',
+    mobile: ''
   };
 
   const [orderData, setOrderData] = useState<Partial<Order>>(initialOrderData);
@@ -113,7 +114,16 @@ const CreateOrderModal: React.FC<CreateOrderModalProps> = ({
                 required
               />
             </div>
-
+            <div className="space-y-2">
+              <Label htmlFor="mobile">Mobile Number</Label>
+              <Input 
+                id="mobile"
+                placeholder="Mobile Number" 
+                value={orderData.mobile || ''} 
+                onChange={(e) => setOrderData({...orderData, mobile: e.target.value})}
+                required
+              />
+            </div>
             {/* Restaurant Selection */}
             <div className="space-y-2">
               <Label>Restaurant</Label>
@@ -294,6 +304,7 @@ const CreateOrderModal: React.FC<CreateOrderModalProps> = ({
             disabled={!orderData.customerName || 
                      !orderData.userAddress || 
                      !orderData.paymentMethod || 
+                     !orderData.mobile ||
                      orderData.items?.length === 0}
           >
             Create Order
