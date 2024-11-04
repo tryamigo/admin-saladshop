@@ -57,7 +57,7 @@ const CompleteDeliveryModal: React.FC<CompleteDeliveryModalProps> = ({
               </SelectTrigger>
               <SelectContent>
                 {orders.map((order) => (
-                  <SelectItem key={order.id} value={order.id}>{order.customerName} - {order.restaurantName}</SelectItem>
+                  <SelectItem key={order.id} value={order.id}>{order.customerName}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
