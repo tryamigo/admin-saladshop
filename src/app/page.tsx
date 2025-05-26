@@ -74,11 +74,6 @@ const DashboardContentPage: React.FC = () => {
                 icon={<BarChartIcon className="h-6 w-6 text-green-500" />}
             />
             <StatsCard
-                title="Available Delivery Agents"
-                value={stats.availableDeliveryAgents}
-                icon={<PersonIcon className="h-6 w-6 text-yellow-500" />}
-            />
-            <StatsCard
                 title="Total Users"
                 value={stats.totalUsers}
                 icon={<PersonIcon className="h-6 w-6 text-purple-500" />}

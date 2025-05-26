@@ -56,7 +56,6 @@ function AdminLayout({
     { name: 'Dashboard', icon: BarChartIcon, path: '/' },
     { name: 'Orders', icon: BoxIcon, path: '/orders' },
     { name: 'Restaurants', icon: BarChartIcon, path: '/restaurants' },
-    { name: 'Delivery Agents', icon: PersonIcon, path: '/agents' },
     { name: 'Users', icon: PersonIcon, path: '/users' },
     { name: 'Settings', icon: GearIcon, path: '/settings' },
     { name: 'Profile', icon: PersonIcon, path: '/profile' },
