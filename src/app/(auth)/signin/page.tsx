@@ -200,6 +200,17 @@ function SignInPage() {
     setOtp("")
   }
 
+  if (status === "loading") {
+    return (
+      <div className="flex min-h-screen items-center justify-center p-4 bg-gradient-to-br from-blue-50 via-white to-purple-50">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <div className="text-gray-600 text-lg font-medium">Loading...</div>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="flex min-h-screen items-center justify-center p-4 bg-gradient-to-br from-blue-50 via-white to-purple-50">
       <Card className="w-full max-w-md shadow-2xl border-0 bg-white/80 backdrop-blur-sm">
@@ -231,7 +242,7 @@ function SignInPage() {
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-medium">+91</span>
                 </div>
                 {mobileNumber && (
-                  <p className="text-sm text-gray-500">We'll send an OTP to +91 {formatMobileNumber(mobileNumber)}</p>
+                  <p className="text-sm text-gray-500">We&apos;ll send an OTP to +91 {formatMobileNumber(mobileNumber)}</p>
                 )}
               </div>
               <Button
@@ -311,7 +322,7 @@ function SignInPage() {
           {showOtpInput && (
             <div className="text-center">
               <p className="text-sm text-gray-500">
-                Didn't receive the code?{" "}
+                Didn&apos;t receive the code?{" "}
                 <button
                   type="button"
                   onClick={handleSendOtp}
