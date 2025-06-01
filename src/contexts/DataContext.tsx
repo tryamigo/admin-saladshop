@@ -2,7 +2,7 @@
 'use client'
 import { Order, User } from '@/components/admin/types'
 import { useSession } from 'next-auth/react'
-import { createContext, useContext, useState, useEffect } from 'react'
+import { createContext, useContext, useState, useEffect, useCallback } from 'react'
 
 interface DataContextType {
   orders: Order[]
@@ -19,31 +19,19 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   const [searchTerm, setSearchTerm] = useState('')
   const {data:session,status} = useSession()
 
-  const fetchData = async () => {
-    if (status === "authenticated" && session?.user.accessToken) {
-      try {
-        await fetchOrders()
-        await fetchUsers()
-      } catch (error) {
-        console.error('Error fetching data:', error)
-      }
-    }
-  }
-   // Fetch orders from the API
-   const fetchOrders = async () => {
+  // Fetch orders from the API
+  const fetchOrders = async () => {
     try {
       const response = await fetch('/api/orders',{
         headers:{
           Authorization: `Bearer ${session?.user.accessToken}`,
-
         }
-      }) // Adjust the API endpoint as needed
+      })
       if (!response.ok) throw new Error('Failed to fetch orders')
       const data = await response.json()
       setOrders(data)
     } catch (error) {
       console.error('Error fetching orders:', error)
-  
     }
   }
  
@@ -63,9 +51,21 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       console.error('Error fetching users:', error)
     }
   }
+
+  const fetchData = useCallback(async () => {
+    if (status === "authenticated" && session?.user.accessToken) {
+      try {
+        await fetchOrders()
+        await fetchUsers()
+      } catch (error) {
+        console.error('Error fetching data:', error)
+      }
+    }
+  }, [status, session?.user.accessToken, fetchOrders, fetchUsers]);
+
   useEffect(() => {
     fetchData()
-  }, [status, session])
+  }, [fetchData])
  
 
   return (

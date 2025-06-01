@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Button } from "@/components/ui/button"
@@ -39,15 +39,7 @@ export default function MenuItemPage({ params }: { params: { id: string } }) {
     },
   })
 
-  useEffect(() => {
-    if (!isNewItem) {
-      fetchMenuItem()
-    } else {
-      setIsLoading(false)
-    }
-  }, [params.id])
-
-  const fetchMenuItem = async () => {
+  const fetchMenuItem = useCallback(async () => {
     try {
       const response = await fetch(`https://backend.thesaladhouse.co/menu/${params.id}`)
       if (!response.ok) {
@@ -109,7 +101,15 @@ export default function MenuItemPage({ params }: { params: { id: string } }) {
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [params.id, form, router, toast]);
+
+  useEffect(() => {
+    if (!isNewItem) {
+      fetchMenuItem()
+    } else {
+      setIsLoading(false)
+    }
+  }, [isNewItem, fetchMenuItem]);
 
   const onSubmit = async (data: MenuItemForm) => {
     setIsSubmitting(true)

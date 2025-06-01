@@ -46,7 +46,7 @@ const SettingsContentPage: React.FC = () => {
       }
     }
     loadSettings()
-  }, [])
+  }, [toast])
 
   const handleSaveSettings = async () => {
     setIsLoading(true)

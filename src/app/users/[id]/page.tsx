@@ -61,7 +61,7 @@ const UserDetailPage: React.FC = () => {
 
             fetchUserOrders();
         }
-    }, [id, users]);
+    }, [id, users, session?.user.accessToken]);
 
     const handleEdit = () => {
         setIsEditing(true);

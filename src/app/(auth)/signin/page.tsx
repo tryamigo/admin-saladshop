@@ -491,7 +491,7 @@ function SignInPage() {
 
       <div className="text-center">
         <p className="text-sm text-gray-500">
-          Didn't receive the code?{" "}
+          Didn&apos;t receive the code?{" "}
           <button
             type="button"
             onClick={() => handleSendOTP()}

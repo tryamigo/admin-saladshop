@@ -137,7 +137,7 @@ export default function MenuPage() {
               {menuItems.length === 0 && (
                 <TableRow>
                   <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
-                    No menu items found. Click "Add New Item" to create one.
+                    No menu items found. Click &quot;Add New Item&quot; to create one.
                   </TableCell>
                 </TableRow>
               )}

@@ -3,14 +3,12 @@ import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { DeliveryAgent, Order } from './admin/types';
 
 interface CompleteDeliveryModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSubmit: (assignmentData: { orderId: string, agentId: string }) => void;
-  orders: Order[];
-  deliveryAgents: DeliveryAgent[];
+  orders: any[];
 }
 
 const CompleteDeliveryModal: React.FC<CompleteDeliveryModalProps> = ({
@@ -18,7 +16,6 @@ const CompleteDeliveryModal: React.FC<CompleteDeliveryModalProps> = ({
   onClose,
   onSubmit,
   orders,
-  deliveryAgents
 }) => {
   const [assignmentData, setAssignmentData] = useState<{ orderId: string, agentId: string }>({
     orderId: '',
@@ -64,14 +61,6 @@ const CompleteDeliveryModal: React.FC<CompleteDeliveryModalProps> = ({
             <Select 
               onValueChange={(value) => setAssignmentData({...assignmentData, agentId: value})}
             >
-              <SelectTrigger>
-                <SelectValue placeholder="Select Delivery Agent" />
-              </SelectTrigger>
-              <SelectContent>
-                {deliveryAgents.map((agent) => (
-                  <SelectItem key={agent.id} value={agent.id}>{agent.name}</SelectItem>
-                ))}
-              </SelectContent>
             </Select>
             <Button type="submit">Complete Delivery</Button>
           </div>

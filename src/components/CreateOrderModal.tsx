@@ -4,20 +4,18 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { Order, OrderItem, OrderStatus, Restaurant } from './admin/types';
+import { Order, OrderItem, OrderStatus,  } from './admin/types';
 
 interface CreateOrderModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSubmit: (orderData: Partial<Order>) => void;
-  restaurants: Restaurant[];
 }
 
 const CreateOrderModal: React.FC<CreateOrderModalProps> = ({ 
   isOpen, 
   onClose, 
   onSubmit, 
-  restaurants 
 }) => {
   const initialOrderData: Partial<Order> = {
     customerName: '',
@@ -136,16 +134,6 @@ const CreateOrderModal: React.FC<CreateOrderModalProps> = ({
                   });
                 }}
               >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select Restaurant" />
-                </SelectTrigger>
-                <SelectContent>
-                  {restaurants.map((restaurant) => (
-                    <SelectItem key={restaurant.id} value={restaurant.id}>
-                      {restaurant.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
               </Select>
             </div>
 

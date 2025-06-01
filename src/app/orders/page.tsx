@@ -1,5 +1,5 @@
 'use client'
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { EyeIcon, ChevronDownIcon, PlusIcon, SearchIcon } from 'lucide-react'
@@ -7,7 +7,7 @@ import Link from 'next/link'
 import { useData } from '@/contexts/DataContext'
 import { useToast } from '@/hooks/use-toast'
 import CreateOrderModal from '@/components/CreateOrderModal'
-import { Order, Restaurant } from '@/components/admin/types'
+import { Order, } from '@/components/admin/types'
 import { useSession } from 'next-auth/react'
 import { format } from 'date-fns';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -18,39 +18,35 @@ const OrdersContentPage: React.FC = () => {
   const { searchTerm } = useData() 
   const [orders, setOrders] = useState<Order[]>([])
   const [isModalOpen, setIsModalOpen] = useState(false)
-  const [restaurants, setRestaurants] = useState<Restaurant[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const {toast} = useToast()
   const {data : session,status} = useSession()
-  const fetchRestaurants = async () => {
+  const fetchRestaurants = useCallback(async () => {
     setIsLoading(true)
     try {
       const response = await fetch('/api/restaurants',{
         headers:{
           Authorization: `Bearer ${session?.user.accessToken}`,
-
         }
       })
       if (!response.ok) {
         throw new Error('Failed to fetch restaurants')
       }
       const data = await response.json()
-      setRestaurants(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error(err)
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [session?.user.accessToken]);
 
-   // Fetch orders from the API
-   const fetchOrders = async () => {
+  const fetchOrders = useCallback(async () => {
     try {
       const response = await fetch('/api/orders',{
         headers:{
           Authorization: `Bearer ${session?.user.accessToken}`,
         }
-      }) // Adjust the API endpoint as needed
+      })
       if (!response.ok) throw new Error('Failed to fetch orders')
       const data = await response.json()
       setOrders(data)
@@ -62,13 +58,14 @@ const OrdersContentPage: React.FC = () => {
         variant: "destructive",
       })
     }
-  }
+  }, [session?.user.accessToken, toast]);
+
   useEffect(() => {
     if (status === 'authenticated') {
       fetchRestaurants()
       fetchOrders()
     }
-  }, [status,session])
+  }, [status, fetchRestaurants, fetchOrders])
   const handleStatusFilter = (event: React.ChangeEvent<HTMLSelectElement>) => {
     setStatusFilter(event.target.value)
   }
@@ -138,7 +135,6 @@ const OrdersContentPage: React.FC = () => {
           isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}
           onSubmit={handleCreateOrder}
-          restaurants={restaurants}
         />
 
         <div className="flex justify-between items-center mb-6">

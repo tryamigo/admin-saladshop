@@ -61,12 +61,10 @@ const OrderDetails: React.FC = () => {
   };
 
   useEffect(() => {
-
     if (status === 'authenticated') {
       fetchOrderDetails(id).then(setOrder);
-
     }
-  }, [id, session, status]);
+  }, [id, session, status, fetchOrderDetails]);
 
 
   const handleEditOrder = async () => {
