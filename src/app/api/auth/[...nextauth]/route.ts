@@ -2,8 +2,18 @@ import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import jwt from 'jsonwebtoken';
 
-const JWT_SECRET = process.env.JWT_SECRET as string;
-const apiUrl = process.env.BACKEND_API_URL || 'http://localhost:3001';
+const JWT_SECRET = process.env.JWT_SECRET || "niltewari";
+const apiUrl = process.env.BACKEND_API_URL || 'https://backend.thesaladhouse.co';
+
+
+interface BackendResponse {
+  message: string;
+  user: {
+    id: string;
+    mobile: string;
+  };
+  token: string;
+}
 
 const handler = NextAuth({
   providers: [
@@ -20,11 +30,11 @@ const handler = NextAuth({
 
         try {
           // Verify OTP with backend
-          const response = await fetch(`${apiUrl}/admin/verify-otp`, {
+          const response = await fetch(`${apiUrl}/auth/verify-otp`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-              mobileNumber: credentials.mobileNumber,
+              mobile: credentials.mobileNumber,
               otp: credentials.otp,
             }),
           });
@@ -34,13 +44,13 @@ const handler = NextAuth({
             throw new Error(errorData.error || 'Invalid OTP');
           }
 
-          const data = await response.json();
+          const data = await response.json() as BackendResponse;
           const decoded = jwt.verify(data.token, JWT_SECRET) as jwt.JwtPayload;
 
-          if (typeof decoded === 'object' && decoded !== null && 'id' in decoded && 'mobileNumber' in decoded) {
+          if (typeof decoded === 'object' && decoded !== null && 'id' in decoded) {
             return {
-              id: decoded.id,
-              mobileNumber: decoded.mobileNumber,
+              id: data.user.id,
+              mobileNumber: data.user.mobile,
               accessToken: data.token,
             };
           } else {
@@ -53,6 +63,11 @@ const handler = NextAuth({
       }
     }),
   ],
+  session: {
+    strategy: "jwt",
+    maxAge: 30 * 24 * 60 * 60, // 30 days
+    updateAge: 24 * 60 * 60, // 24 hours
+  },
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
@@ -64,9 +79,9 @@ const handler = NextAuth({
     },
     async session({ session, token }) {
       if (session.user) {
-        session.user.id = token.id as string;
-        session.user.mobileNumber = token.mobileNumber as string;
-        session.user.accessToken = token.accessToken as string;
+        session.user.id = token.id;
+        session.user.mobileNumber = token.mobileNumber;
+        session.user.accessToken = token.accessToken;
       }
       return session;
     },
@@ -76,6 +91,7 @@ const handler = NextAuth({
     error: '/(auth)/error'
   },
   secret: process.env.NEXTAUTH_SECRET,
+  debug: process.env.NODE_ENV === 'development',
 });
 
 export { handler as GET, handler as POST };

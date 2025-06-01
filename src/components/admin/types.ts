@@ -40,13 +40,6 @@ export interface Order {
   items: OrderItem[];
 }
 
-export interface Restaurant {
-  id: string;
-  name: string;
-  address: Address;
-  phoneNumber: string;
-  openingHours: string;
-}
 
 export interface MenuItem {
   id: string;
@@ -56,26 +49,6 @@ export interface MenuItem {
   ratings?: number; // Add any other fields you need
   discounts?: number; // If applicable
   imageLink?: string; // If applicable
-}
-export type deliveryStatus = 'available' | 'on delivery' | 'offline';
-export interface DeliveryAgent {
-  id: string;
-  name: string;
-  status:deliveryStatus
-  completedDeliveries: number;
-  phoneNumber: string;
-  email: string;
-  joinDate: Date;
-  rating: number;
-  licenseNumber?: string;
-  aadharNumber?: string; 
-  address:Address
-  // currentOrder?: {
-  //   id: string;
-  //   restaurantName: string;
-  //   customerName: string;
-  //   deliveryAddress: Address;
-  // };
 }
 
 export interface User {

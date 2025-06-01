@@ -15,19 +15,16 @@ import {
 } from '@radix-ui/react-icons'
 import { Button } from "@/components/ui/button"
 import { Input } from '@/components/ui/input'
-import { SearchIcon } from 'lucide-react'
+import { SearchIcon, MenuIcon, XIcon } from 'lucide-react'
 import { usePathname, useRouter } from 'next/navigation'
 import { useData } from '@/contexts/DataContext'
+import { useState } from 'react'
 import { signOut } from 'next-auth/react'
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
-  const pathname = usePathname();
-  const isAuthPage = pathname === '/signin' || pathname === '/error';
-  
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname()
+  const isAuthPage = pathname === '/signin' || pathname === '/error'
 
   return (
     <html lang="en">
@@ -35,97 +32,35 @@ export default function RootLayout({
         <SessionProvider>
           <DataProvider>
             {isAuthPage ? children : <AdminLayout>{children}</AdminLayout>}
-            <Toaster/>
+            <Toaster />
           </DataProvider>
         </SessionProvider>
       </body>
     </html>
-  );
+  )
 }
 
-function AdminLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
-  const { searchTerm, setSearchTerm } = useData()
+
+
+
+export function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
-  const router = useRouter()
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false)
 
-  const menuItems = [
-    { name: 'Dashboard', icon: BarChartIcon, path: '/' },
-    { name: 'Orders', icon: BoxIcon, path: '/orders' },
-    { name: 'Restaurants', icon: BarChartIcon, path: '/restaurants' },
-    { name: 'Users', icon: PersonIcon, path: '/users' },
-    { name: 'Settings', icon: GearIcon, path: '/settings' },
-    { name: 'Profile', icon: PersonIcon, path: '/profile' },
-  ]
-
-  const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(event.target.value.toLowerCase())
-  }
-
-  const handleLogout = async () => {
-    signOut({callbackUrl:'/signin'})
-  }
+  const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen)
 
   return (
     <div className="flex h-screen bg-gray-100">
-      {/* Sidebar */}
-      <motion.div
-        initial={{ x: -250 }}
-        animate={{ x: 0 }}
-        className="w-64 bg-white shadow-lg"
-      >
-        <div className="p-4">
-          <h1 className="text-2xl font-bold text-gray-800">Admin Panel</h1>
-        </div>
-        <nav className="mt-8">
-          {menuItems.map((item) => (
-            <Button
-              key={item.path}
-              variant={pathname === item.path ? "secondary" : "ghost"}
-              className="w-full justify-start"
-              onClick={() => router.push(item.path)}
-            >
-              <item.icon className="mr-2 h-4 w-4" />
-              {item.name}
-            </Button>
-          ))}
-        </nav>
-      </motion.div>
-
-      {/* Main content */}
+      {isSidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 z-20 lg:hidden"
+          onClick={toggleSidebar}
+        />
+      )}
+      <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
       <div className="flex-1 overflow-x-hidden overflow-y-auto">
-        {/* Header */}
-        <header className="bg-white shadow-sm">
-          <div className="flex items-center justify-between px-4 py-3">
-            <h2 className="text-xl font-semibold text-gray-800">
-              {menuItems.find((item) => item.path === pathname)?.name}
-            </h2>
-            <div className="flex items-center">
-              <div className="relative mr-4">
-                <Input
-                  type="text"
-                  placeholder="Search..."
-                  className="pl-10 pr-4 py-2 rounded-md"
-                  value={searchTerm}
-                  onChange={handleSearch}
-                />
-                <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-              </div>
-              <Button variant="ghost" size="icon" className="mr-2">
-                <BellIcon className="h-5 w-5" />
-              </Button>
-              <Button variant="ghost" size="icon" onClick={handleLogout} title="Logout">
-                <ExitIcon className="h-5 w-5" />
-              </Button>
-            </div>
-          </div>
-        </header>
-
-        {/* Content */}
-        <main className="p-6">
+        <Header toggleSidebar={toggleSidebar} />
+        <main className="p-4 sm:p-6">
           <motion.div
             key={pathname}
             initial={{ opacity: 0, y: 20 }}
@@ -137,6 +72,100 @@ function AdminLayout({
           </motion.div>
         </main>
       </div>
+    </div>
+  )
+}
+
+const menuMap: Record<string, string> = {
+  '/': 'Dashboard',
+  '/orders': 'Orders',
+  '/restaurants': 'Restaurants',
+  '/users': 'Users',
+  '/settings': 'Settings',
+  '/profile': 'Profile',
+}
+
+export function Header({ toggleSidebar }: { toggleSidebar: () => void }) {
+  const { searchTerm, setSearchTerm } = useData()
+  const pathname = usePathname()
+
+  return (
+    <header className="bg-white shadow-sm sticky top-0 z-10">
+      <div className="flex items-center justify-between px-4 py-3">
+        <div className="flex items-center gap-4">
+          <Button variant="ghost" size="icon" className="lg:hidden" onClick={toggleSidebar}>
+            <MenuIcon className="h-5 w-5" />
+          </Button>
+          <h2 className="text-xl font-semibold text-gray-800">{menuMap[pathname] || 'Dashboard'}</h2>
+        </div>
+        <div className="flex items-center gap-2 sm:gap-4">
+          <div className="relative hidden sm:block">
+            <Input
+              type="text"
+              placeholder="Search..."
+              className="pl-10 pr-4 py-2 rounded-md w-[200px] sm:w-[250px] md:w-[300px]"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value.toLowerCase())}
+            />
+            <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+          </div>
+          <Button variant="ghost" size="icon" className="hidden sm:flex">
+            <BellIcon className="h-5 w-5" />
+          </Button>
+        </div>
+      </div>
+    </header>
+  )
+}
+
+const menuItems = [
+  { name: 'Dashboard', icon: BarChartIcon, path: '/' },
+  { name: 'Orders', icon: BoxIcon, path: '/orders' },
+  { name: 'Menu', icon: BoxIcon, path: '/menu' },
+  { name: 'Users', icon: PersonIcon, path: '/users' },
+  { name: 'Settings', icon: GearIcon, path: '/settings' },
+]
+
+export  function Sidebar({ isOpen, toggleSidebar }: { isOpen: boolean, toggleSidebar: () => void }) {
+  const pathname = usePathname()
+  const router = useRouter()
+
+  return (
+    <div
+      className={`fixed lg:static w-64 h-full bg-white shadow-lg z-30 transition-transform duration-300 ease-in-out ${
+        isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+      }`}
+    >
+      <div className="p-4 flex items-center justify-between">
+        <h1 className="text-2xl font-bold text-gray-800">Admin Panel</h1>
+        <Button variant="ghost" size="icon" className="lg:hidden" onClick={toggleSidebar}>
+          <XIcon className="h-5 w-5" />
+        </Button>
+      </div>
+      <nav className="mt-8">
+        {menuItems.map((item) => (
+          <Button
+            key={item.path}
+            variant={pathname === item.path ? "secondary" : "ghost"}
+            className="w-full justify-start"
+            onClick={() => {
+              router.push(item.path)
+              toggleSidebar()
+            }}
+          >
+            <item.icon className="mr-2 h-4 w-4" />
+            {item.name}
+          </Button>
+        ))}
+        <Button
+          variant="ghost"
+          className="w-full justify-start mt-4"
+          onClick={() => signOut({ callbackUrl: '/signin' })}
+        >
+          <ExitIcon className="mr-2 h-4 w-4" />
+          Logout
+        </Button>
+      </nav>
     </div>
   )
 }
