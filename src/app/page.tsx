@@ -6,45 +6,46 @@ import {  TrendingUpIcon, TrendingDownIcon, PlusIcon } from 'lucide-react'
 import { format } from 'date-fns'
 import { useData } from '@/contexts/DataContext'
 import { Button } from '@/components/ui/button'
+import { DollarSign, ShoppingCart, TrendingUp, Users } from 'lucide-react'
 
 
 
 const DashboardContentPage: React.FC = () => {
-    const { orders, users, searchTerm } = useData()
+    const { orders, users, searchTerm, setSearchTerm } = useData()
   const filteredData = useMemo(() => {
     const lowerSearchTerm = searchTerm?.toLowerCase()
     return {
       orders: orders?.filter(order => 
-        order.customerName.toLowerCase().includes(lowerSearchTerm)
+        order.userId.toLowerCase().includes(lowerSearchTerm)
       ),
       users: users?.filter(user => 
         user.mobile.includes(searchTerm)
-      )
+      ),
+      searchTerm,
+      setSearchTerm
     }
-  }, [orders, users, searchTerm])
+  }, [orders, users, searchTerm, setSearchTerm])
 
   const stats = useMemo(() => {
     const today = new Date()
-    const yesterday = new Date(today)
-    yesterday.setDate(yesterday.getDate() - 1)
+    const startOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate())
+    const endOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59)
 
-    const ordersToday = filteredData.orders?.filter(order => 
-      format(order.date, 'yyyy-MM-dd') === format(today, 'yyyy-MM-dd')
-    ).length
-    const ordersYesterday = filteredData.orders?.filter(order => 
-      format(order.date, 'yyyy-MM-dd') === format(yesterday, 'yyyy-MM-dd')
-    ).length
+    const todayOrders = filteredData.orders?.filter(order => {
+      const orderDate = new Date(order.orderTime)
+      return orderDate >= startOfDay && orderDate <= endOfDay
+    })
 
-    const ordersTrend = ordersToday > ordersYesterday ? 'up' : 'down'
+    const totalRevenue = todayOrders?.reduce((sum, order) => sum + order.total, 0) || 0
+    const totalOrders = todayOrders?.length || 0
+    const averageOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0
 
     return {
-      totalOrders: filteredData.orders.length,
-      totalUsers: filteredData.users.length,
-      ordersTrend,
-      ordersToday,
-      ordersYesterday
+      totalRevenue,
+      totalOrders,
+      averageOrderValue
     }
-  }, [filteredData])
+  }, [filteredData.orders])
 
 
   return (
@@ -58,19 +59,43 @@ const DashboardContentPage: React.FC = () => {
             </div>
           </div>
           
-          <div className="grid gap-3 sm:gap-4 md:gap-6 grid-cols-1 sm:grid-cols-2">
-            <StatsCard
-                title="Total Orders"
-                value={stats.totalOrders}
-                icon={<BoxIcon className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6 text-blue-500" />}
-                trend={stats.ordersTrend}
-                trendValue={`${stats.ordersToday} today (${stats.ordersYesterday} yesterday)`}
-            />
-            <StatsCard
-                title="Total Users"
-                value={stats.totalUsers}
-                icon={<PersonIcon className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6 text-purple-500" />}
-            />
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
+                <DollarSign className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">${stats.totalRevenue.toFixed(2)}</div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Total Orders</CardTitle>
+                <ShoppingCart className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{stats.totalOrders}</div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Average Order Value</CardTitle>
+                <TrendingUp className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">${stats.averageOrderValue.toFixed(2)}</div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Total Users</CardTitle>
+                <Users className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{filteredData.users.length}</div>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </div>
