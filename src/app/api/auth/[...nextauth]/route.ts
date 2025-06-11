@@ -30,6 +30,7 @@ const handler = NextAuth({
 
         try {
           // Verify OTP with backend
+          console.log(apiUrl,"apiurl")
           const response = await fetch(`${apiUrl}/auth/verify-otp`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },

@@ -21,19 +21,22 @@ const OrdersContentPage: React.FC = () => {
 
   const fetchOrders = useCallback(async () => {
     try {
-      const response = await fetch('/api/orders',{
-        headers:{
+      const response = await fetch('https://backend.thesaladhouse.co/orders', {
+        headers: {
           Authorization: `Bearer ${session?.user.accessToken}`,
         }
       })
-      if (!response.ok) throw new Error('Failed to fetch orders')
+      console.log(response,"response")
+      if (!response.ok) {
+        throw new Error('Failed to fetch orders')
+      }
       const data = await response.json()
       setOrders(data)
     } catch (error) {
       console.error('Error fetching orders:', error)
       toast({
         title: "Error",
-        description: "Failed to fetch orders",
+        description: "Failed to fetch orders. Please try again.",
         variant: "destructive",
       })
     } finally {

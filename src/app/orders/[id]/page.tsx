@@ -39,19 +39,21 @@ const OrderDetails: React.FC = () => {
 
   const fetchOrderDetails = async (id: string) => {
     try {
-      const response = await fetch(`/api/orders/${id}`, {
+      const response = await fetch(`https://backend.thesaladhouse.co/orders/${id}`, {
         headers: {
           Authorization: `Bearer ${session?.user.accessToken}`,
         }
       });
-      if (!response.ok) throw new Error('Failed to fetch order details');
+      if (!response.ok) {
+        throw new Error('Failed to fetch order details')
+      }
       const data = await response.json();
       return data;
     } catch (error) {
       console.error('Error fetching order details:', error);
       toast({
         title: "Error",
-        description: "Failed to fetch order details",
+        description: "Failed to fetch order details. Please try again.",
         variant: "destructive",
       });
       return null;
@@ -68,7 +70,7 @@ const OrderDetails: React.FC = () => {
     if (!editedOrder) return;
 
     try {
-      const response = await fetch(`/api/orders/${id}`, {
+      const response = await fetch(`https://backend.thesaladhouse.co/orders/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -77,7 +79,9 @@ const OrderDetails: React.FC = () => {
         body: JSON.stringify({ status: editedOrder.status }),
       });
 
-      if (!response.ok) throw new Error('Failed to update order');
+      if (!response.ok) {
+        throw new Error('Failed to update order')
+      }
 
       const updatedOrder = await fetchOrderDetails(id);
       setOrder(updatedOrder);
@@ -90,7 +94,7 @@ const OrderDetails: React.FC = () => {
       console.error('Error updating order:', error);
       toast({
         title: "Error",
-        description: "Failed to update order",
+        description: "Failed to update order. Please try again.",
         variant: "destructive",
       });
     }
