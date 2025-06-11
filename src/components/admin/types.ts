@@ -1,5 +1,5 @@
 // src/components/admin/types.ts
-export type OrderStatus = 'pending' | 'preparing' | 'on the way' | 'delivered';
+export type OrderStatus = 'Pending' | 'Order Received' | 'Preparing' | 'Ready for Pickup' | 'Order Collected' | 'Ask for cancel';
 
 export interface Address {
 id?: string;
@@ -19,25 +19,24 @@ export interface OrderItem {
   name: string;
   quantity: number;
   price: number;
-  ratings: number;
-  discount: number;
-  description: string; 
-  imageLink: string; 
+  description: string;
+  imageLink: string;
 }
 
 export interface Order {
   id: string;
-  customerName: string;
-  restaurantId: string; // Changed from restaurantName
+  userId: string;
   status: OrderStatus;
   total: number;
-  mobile:string; 
-  date: Date;
-  userAddress: string; // Changed from deliveryAddress
-  userLatitude: number; // Added
-  userLongitude: number; // Added
-  paymentMethod: string;
-  items: OrderItem[];
+  orderTime: Date;
+  deliveryTime?: Date;
+  rating?: number;
+  feedback?: string;
+  deliveryCharge: number;
+  discount: number;
+  orderItems: OrderItem[];
+  takeFromStore: boolean;
+  userAddress?: any;
 }
 
 

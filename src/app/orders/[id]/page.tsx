@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeftIcon, Edit, Trash2, X, Plus } from 'lucide-react';
+import { ArrowLeftIcon, Edit } from 'lucide-react';
 import Link from 'next/link';
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -21,34 +21,27 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Order, OrderItem, OrderStatus } from '@/components/admin/types';
+import { Order, OrderStatus } from '@/components/admin/types';
 import { useSession } from 'next-auth/react';
+import { useToast } from '@/hooks/use-toast';
+import { format } from 'date-fns';
 
 const OrderDetails: React.FC = () => {
   const params = useParams();
   const router = useRouter();
   const id = params.id as string;
+  const { toast } = useToast();
 
   const [order, setOrder] = useState<Order | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [editedOrder, setEditedOrder] = useState<Order | null>(null);
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const { data: session, status } = useSession()
+  const { data: session, status } = useSession();
 
   const fetchOrderDetails = async (id: string) => {
     try {
-      const response = await fetch(`/api/orders?id=${id}`, {
+      const response = await fetch(`/api/orders/${id}`, {
         headers: {
           Authorization: `Bearer ${session?.user.accessToken}`,
-
         }
       });
       if (!response.ok) throw new Error('Failed to fetch order details');
@@ -56,6 +49,11 @@ const OrderDetails: React.FC = () => {
       return data;
     } catch (error) {
       console.error('Error fetching order details:', error);
+      toast({
+        title: "Error",
+        description: "Failed to fetch order details",
+        variant: "destructive",
+      });
       return null;
     }
   };
@@ -64,76 +62,39 @@ const OrderDetails: React.FC = () => {
     if (status === 'authenticated') {
       fetchOrderDetails(id).then(setOrder);
     }
-  }, [id, session, status, fetchOrderDetails]);
-
+  }, [id, session, status]);
 
   const handleEditOrder = async () => {
     if (!editedOrder) return;
 
     try {
+      const response = await fetch(`/api/orders/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session?.user.accessToken}`,
+        },
+        body: JSON.stringify({ status: editedOrder.status }),
+      });
 
-      const statusChanged = editedOrder.status !== order?.status;
-      const addressChanged =
-        editedOrder.userAddress !== order?.userAddress ||
-        editedOrder.userLatitude !== order?.userLatitude ||
-        editedOrder.userLongitude !== order?.userLongitude;
-
-      if (statusChanged) {
-        const statusResponse = await fetch(`/api/orders?orderId=${id}&updateType=status`, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${session?.user.accessToken}`,
-          },
-          body: JSON.stringify({ status: editedOrder.status }),
-        });
-
-        if (!statusResponse.ok) throw new Error('Failed to update order status');
-      }
-
-      if (addressChanged) {
-        const addressResponse = await fetch(`/api/orders?orderId=${id}&updateType=address`, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${session?.user.accessToken}`,
-          },
-          body: JSON.stringify({
-            userAddress: editedOrder.userAddress,
-            userLatitude: editedOrder.userLatitude,
-            userLongitude: editedOrder.userLongitude,
-          }),
-        });
-
-        if (!addressResponse.ok) throw new Error('Failed to update order address');
-      }
+      if (!response.ok) throw new Error('Failed to update order');
 
       const updatedOrder = await fetchOrderDetails(id);
       setOrder(updatedOrder);
       setIsEditing(false);
+      toast({
+        title: "Success",
+        description: "Order updated successfully",
+      });
     } catch (error) {
       console.error('Error updating order:', error);
-    }
-  };
-  console.log('orders are',order);
-  const handleDeleteOrder = async () => {
-    try {
-      const response = await fetch(`/api/orders?orderId=${id}`, {
-        method: 'DELETE',
-        headers: {
-          Authorization: `Bearer ${session?.user.accessToken}`,
-        }
+      toast({
+        title: "Error",
+        description: "Failed to update order",
+        variant: "destructive",
       });
-
-      if (!response.ok) throw new Error('Failed to delete order');
-
-      setIsDeleteDialogOpen(false);
-      router.push('/orders');
-    } catch (error) {
-      console.error('Error deleting order:', error);
     }
   };
-
 
   if (!order) return (
     <div className="flex justify-center items-center h-screen">
@@ -143,8 +104,8 @@ const OrderDetails: React.FC = () => {
 
   return (
     <div className="container mx-auto p-6 max-w-4xl bg-white shadow rounded-lg space-y-6">
-    <div className="flex flex-row justify-between items-center pb-4 border-b">
-      <Link href="/orders" passHref>
+      <div className="flex flex-row justify-between items-center pb-4 border-b">
+        <Link href="/orders" passHref>
           <Button variant="outline">
             <ArrowLeftIcon className="mr-2 h-4 w-4" />
             Back to Orders
@@ -163,45 +124,19 @@ const OrderDetails: React.FC = () => {
               <Edit className="mr-2 h-4 w-4" />
               Edit Order
             </DropdownMenuItem>
-            <DropdownMenuItem
-              className="text-red-600"
-              onClick={() => setIsDeleteDialogOpen(true)}
-            >
-              <Trash2 className="mr-2 h-4 w-4" />
-              Delete Order
-            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
-
-      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Delete Order</DialogTitle>
-          </DialogHeader>
-          <DialogDescription>
-            Are you sure you want to delete this order? This action cannot be undone.
-          </DialogDescription>
-          <DialogFooter>
-            <Button variant="destructive" onClick={handleDeleteOrder}>
-              Delete
-            </Button>
-            <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)}>
-              Cancel
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
 
       {isEditing ? (
         <div className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>Customer Name</Label>
+              <Label>User ID</Label>
               <Input
-                value={editedOrder?.customerName || ''}
-                disabled // Disable customer name editing
-                className="bg-gray-100" // Add visual indication that it's disabled
+                value={order.userId}
+                disabled
+                className="bg-gray-100"
               />
             </div>
             <div className="space-y-2">
@@ -216,209 +151,114 @@ const OrderDetails: React.FC = () => {
                   <SelectValue placeholder="Select status" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="pending">Pending</SelectItem>
-                  <SelectItem value="preparing">Preparing</SelectItem>
-                  <SelectItem value="on the way">On the way</SelectItem>
-                  <SelectItem value="delivered">Delivered</SelectItem>
+                  <SelectItem value="Pending">Pending</SelectItem>
+                  <SelectItem value="Preparing">Preparing</SelectItem>
+                  <SelectItem value="Ready for Pickup">Ready for Pickup</SelectItem>
+                  <SelectItem value="Order Collected">Order Collected</SelectItem>
+                  <SelectItem value="Ask for cancel">Ask for cancel</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div className="space-y-2">
-              <Label>User Address</Label>
+              <Label>Total Amount</Label>
               <Input
-                value={editedOrder?.userAddress || ''}
-                onChange={(e) => setEditedOrder(prev => ({ ...prev!, userAddress: e.target.value }))}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>Latitude</Label>
-              <Input
-                type="number"
-                value={editedOrder?.userLatitude || ''}
-                onChange={(e) => setEditedOrder(prev => ({ ...prev!, userLatitude: parseFloat(e.target.value) }))}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>Longitude</Label>
-              <Input
-                type="number"
-                value={editedOrder?.userLongitude || ''}
-                onChange={(e) => setEditedOrder(prev => ({ ...prev!, userLongitude: parseFloat(e.target.value) }))}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>Payment Method</Label>
-              <Input
-                value={editedOrder?.paymentMethod || ''}
+                value={`$${order.total.toFixed(2)}`}
                 disabled
                 className="bg-gray-100"
               />
             </div>
-          </div>
-
-          <div className="space-y-4">
-            <div className="flex justify-between items-center">
-              <h3 className="font-medium">Order Items</h3>
+            <div className="space-y-2">
+              <Label>Order Time</Label>
+              <Input
+                value={format(new Date(order.orderTime), 'PPp')}
+                disabled
+                className="bg-gray-100"
+              />
             </div>
-
-            <table className="w-full">
-              <thead>
-                <tr>
-                  <th className="text-left">Item</th>
-                  <th className="text-left">Quantity</th>
-                  <th className="text-left">Description</th>
-                  <th className="text-left">Price</th>
-                  <th className="text-left">Discount</th>
-                  <th className="text-left">Image</th>
-                  <th className="text-left">Subtotal</th>
-                </tr>
-              </thead>
-              <tbody>
-                {editedOrder?.items.map((item) => (
-                  <tr key={item.id}>
-                    <td>
-                      <Input
-                        value={item.name || ''}
-                        disabled
-                        className="bg-gray-100"
-                      />
-                    </td>
-                    <td>
-                      <Input
-                        type="number"
-                        value={item.quantity || ''}
-                        disabled
-                        className="bg-gray-100"
-                      />
-                    </td>
-                    <td>
-                      <Input
-                        value={item.description || ''}
-                        disabled
-                        className="bg-gray-100"
-                      />
-                    </td>
-                    <td>
-                      <Input
-                        type="number"
-                        value={item.price || ''}
-                        disabled
-                        className="bg-gray-100"
-                      />
-                    </td>
-                    <td>
-                      <Input
-                        type="number"
-                        value={item.discount || ''}
-                        disabled
-                        className="bg-gray-100"
-                      />
-                    </td>
-                    <td>
-                      <Input
-                        value={item.imageLink || ''}
-                        disabled
-                        className="bg-gray-100"
-                      />
-                    </td>
-                    <td>${(item.quantity * item.price).toFixed(2)}</td>
-                  </tr>
-                ))}
-              </tbody>
-              <tfoot>
-                <tr>
-                  <td colSpan={6} className="text-right font-bold">Total:</td>
-                  <td className="font-bold">
-                    ${Number(editedOrder?.total).toFixed(2)}
-                  </td>
-                </tr>
-              </tfoot>
-            </table>
+            {order.deliveryTime && (
+              <div className="space-y-2">
+                <Label>Delivery Time</Label>
+                <Input
+                  value={format(new Date(order.deliveryTime), 'PPp')}
+                  disabled
+                  className="bg-gray-100"
+                />
+              </div>
+            )}
+            {order.userAddress && (
+              <div className="space-y-2">
+                <Label>Delivery Address</Label>
+                <Input
+                  value={order.userAddress}
+                  disabled
+                  className="bg-gray-100"
+                />
+              </div>
+            )}
           </div>
 
-          <div className="flex gap-2">
-            <Button onClick={handleEditOrder}>Save Changes</Button>
-            <Button variant="outline" onClick={() => {
-              setIsEditing(false);
-              setEditedOrder(null);
-            }}>Cancel</Button>
+          <div className="flex justify-end space-x-2">
+            <Button variant="outline" onClick={() => setIsEditing(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleEditOrder}>
+              Save Changes
+            </Button>
           </div>
         </div>
       ) : (
-        <div className="space-y-4 ">
-          <h2 className="text-3xl font-bold mb-4 ">Order Details:</h2>
-          < div className="grid grid-cols-1 md:grid-cols-2 ">
-            <div className="space-y-2">
-              <Label>Customer Name:</Label>
-              <Badge variant="outline">{order?.customerName}</Badge>
-            </div>
-            <div className="space-y-2">
-              <Label>Status:</Label>
-              <Badge variant="outline">{order?.status}</Badge>
+        <div className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <h3 className="text-lg font-semibold mb-2">Order Information</h3>
+              <div className="space-y-2">
+                <p><span className="font-medium">Order ID:</span> {order.id}</p>
+                <p><span className="font-medium">User ID:</span> {order.userId}</p>
+                <p><span className="font-medium">Status:</span> <Badge>{order.status}</Badge></p>
+                <p><span className="font-medium">Total:</span> ${order.total.toFixed(2)}</p>
+                <p><span className="font-medium">Order Time:</span> {format(new Date(order.orderTime), 'PPp')}</p>
+                {order.deliveryTime && (
+                  <p><span className="font-medium">Delivery Time:</span> {format(new Date(order.deliveryTime), 'PPp')}</p>
+                )}
+              </div>
             </div>
 
-            <div className="space-y-2">
-              <Label>Payment Method:</Label>
-              <Badge variant="outline">{order?.paymentMethod}</Badge>
+            {order.userAddress && (
+              <div>
+                <h3 className="text-lg font-semibold mb-2">Delivery Information</h3>
+                <div className="space-y-2">
+                  <p><span className="font-medium">Address:</span> {order.userAddress}</p>
+                </div>
+              </div>
+            )}
+
+            <div className="col-span-2">
+              <h3 className="text-lg font-semibold mb-2">Order Items</h3>
+              <div className="border rounded-lg overflow-hidden">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Item</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Quantity</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Price</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Total</th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {order.orderItems.map((item, index) => (
+                      <tr key={index}>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{item.name}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{item.quantity}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${item.price.toFixed(2)}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${(item.price * item.quantity).toFixed(2)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
-          <div className="space-y-2">
-            <Label>User Address:</Label>
-            <Badge variant="outline">{order?.userAddress}</Badge>
-          </div>
-          <div className="space-y-2">
-            <Label>Latitude:</Label>
-            <Badge variant="outline">{order?.userLatitude}</Badge>
-          </div>
-          <div className="space-y-2">
-            <Label>Longitude:</Label>
-            <Badge variant="outline">{order?.userLongitude}</Badge>
-          </div>
-          <div className="space-y-4 bg-white p-4 rounded shadow mt-6">
-            <h3 className="font-medium">Order Items:</h3>
-            <table className="w-full">
-              <thead>
-                <tr>
-                  <th className="text-left">Item</th>
-                  <th className="text-left">Quantity</th>
-                  <th className="text-left">Description</th>
-                  <th className="text-left">Price</th>
-                  <th className="text-left">Discount</th>
-                  <th className="text-left">Image</th>
-                  <th className="text-left">Subtotal</th>
-                </tr>
-              </thead>
-              <tbody>
-                {order?.items.map((item) => (
-                  <tr key={item.id}>
-                    <td>{item.name}</td>
-                    <td>{item.quantity}</td>
-                    <td>{item.description}</td>
-                    <td>${item.price.toFixed(2)}</td>
-                    <td>{item.discount ? `${item.discount}%` : 'N/A'}</td>
-                    <td>
-                      {item.imageLink ? (
-                        <img src={item.imageLink} alt={item.name} className="w-16 h-16 object-cover" />
-                      ) : (
-                        'No Image'
-                      )}
-                    </td>
-                    <td>${(item.quantity * item.price).toFixed(2)}</td>
-                  </tr>
-                ))}
-              </tbody>
-              <tfoot>
-                <tr>
-                  <td colSpan={6} className="text-right font-bold">Total:</td>
-                  <td className="font-bold">${Number(order?.total).toFixed(2)}</td>
-                </tr>
-              </tfoot>
-            </table>
-
-          </div>
-         
         </div>
-        
       )}
     </div>
   );
